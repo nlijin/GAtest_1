@@ -226,4 +226,24 @@ In this example, the component uses React state to store the values of the user 
 Note that this is just a basic example, and you may need to modify the code to meet the specific requirements of your use case. Additionally, this code assumes the existence of a function called run_test_with_params that takes param1 and param2 as inputs and returns a result, which is then asserted against an expected value. You will need to implement this function in your own code or modify the generated code to match the logic of your tests.
 
 
+also please provide an basic ui for the above code
+Sure, here's an example of a simple UI for the React component created in the previous answer:
+
+import React from "react";
+import TestGenerator from "./TestGenerator";
+
+const App = () => {
+  return (
+    <div>
+      <h1>Pytest Code Generator</h1>
+      <TestGenerator />
+    </div>
+  );
+};
+
+export default App;
+
+
+This is a simple example of a UI that wraps the TestGenerator component. The UI displays a header with the title "Pytest Code Generator" and includes the TestGenerator component. You can modify this UI as needed to match the specific requirements of your use case.
+
 

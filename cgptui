@@ -247,3 +247,101 @@ export default App;
 This is a simple example of a UI that wraps the TestGenerator component. The UI displays a header with the title "Pytest Code Generator" and includes the TestGenerator component. You can modify this UI as needed to match the specific requirements of your use case.
 
 
+
+can you also create a basic back-end with pytest cases for the same
+Certainly! Here's an example of a simple back-end for running pytest cases:
+
+python
+Copy code
+# test_example.py
+import pytest
+
+def run_test_with_params(param1, param2):
+    # Your test logic here
+    return result
+
+def test_example(self):
+    result = run_test_with_params("param1", "param2")
+    assert result == expected_result
+In this example, the back-end includes a run_test_with_params function that takes two parameters, param1 and param2, and returns a result. The test_example function uses the run_test_with_params function to run a test and asserts that the result matches the expected result.
+
+Note that this is just a basic example, and you will need to modify the code to match the specific requirements of your use case. Additionally, this code assumes the existence of a variable called expected_result that contains the expected result of the test. You will need to define this variable in your own code or modify the code to match the logic of your tests.
+
+To run the pytest cases, you can use the following command:
+
+Copy code
+pytest test_example.py
+This will run all the tests defined in the test_example.py file. The output will indicate whether the tests passed or failed.
+
+
+
+
+Lijin Raj
+how do i connect the given UI with the back-end above?
+To connect the UI with the back-end, you'll need to create an API endpoint in your back-end that the React front-end can send HTTP requests to. The back-end can then process the requests, run the tests, and return the results to the front-end.
+
+Here's an example of a simple Flask back-end that implements an API endpoint for running pytest cases:
+
+python
+Copy code
+from flask import Flask, request, jsonify
+import pytest
+
+app = Flask(__name__)
+
+def run_test_with_params(param1, param2):
+    # Your test logic here
+    return result
+
+@app.route("/run-tests", methods=["POST"])
+def run_tests():
+    param1 = request.json["param1"]
+    param2 = request.json["param2"]
+    result = run_test_with_params(param1, param2)
+    return jsonify({"result": result})
+
+if __name__ == "__main__":
+    app.run()
+In this example, the Flask app implements an API endpoint at the /run-tests route, which is accessible via a POST request. The front-end can send a POST request to this endpoint with the test parameters as a JSON payload. The back-end will extract the parameters from the request, run the tests using the run_test_with_params function, and return the result as a JSON response.
+
+In your React front-end, you can use the fetch API or a library such as Axios to send the HTTP request to the back-end:
+
+javascript
+Copy code
+import React, { useState } from "react";
+
+const TestGenerator = () => {
+  const [param1, setParam1] = useState("");
+  const [param2, setParam2] = useState("");
+  const [result, setResult] = useState(null);
+
+  const handleGenerate = async () => {
+    const response = await fetch("http://localhost:5000/run-tests", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ param1, param2 })
+    });
+    const data = await response.json();
+    setResult(data.result);
+  };
+
+  return (
+    <div>
+      <div>
+        <label>Param 1:</label>
+        <input type="text" value={param1} onChange={e => setParam1(e.target.value)} />
+      </div>
+      <div>
+        <label>Param 2:</label>
+        <input type="text" value={param2} onChange={e => setParam2(e.target.value)} />
+      </div>
+      <button onClick={handleGenerate}>Run Tests</button>
+      {result !== null && <pre>{result}</pre>}
+    </div>
+  );
+};
+
+export default TestGenerator;
+In this example, the handleGenerate function uses the fetch API to send a POST request to the back-end with the test parameters. The function waits for the response from the back-end and sets the result state with the response data. The result is then displayed in

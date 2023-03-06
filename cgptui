@@ -1,55 +1,30 @@
-import React, { useState, useRef, useEffect } from 'react';
-import './ChatApp.css';
+import React, { useState } from 'react';
 import axios from 'axios';
+import './ChatApp.css';
 
 function ChatApp() {
   const [messages, setMessages] = useState([]);
-  const [inputValue, setInputValue] = useState('');
-  const [sessionId, setSessionId] = useState('');
-  const inputRef = useRef(null);
+  const [newMessage, setNewMessage] = useState('');
 
-  useEffect(() => {
-    axios.post('https://your-api-endpoint.com/chatbot/start')
-      .then((response) => {
-        setSessionId(response.data.sessionId);
-        setMessages([{ text: response.data.message, isUser: false }]);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  }, []);
-
-  const sendMessage = () => {
-    const message = {
-      text: inputValue,
-      isUser: true,
-    };
-
-    setMessages((prevState) => [...prevState, message]);
-    setInputValue('');
-
-    axios.post('https://your-api-endpoint.com/chatbot/send', {
-      sessionId,
-      message: {
-        text: message.text,
-        isUser: message.isUser,
-      },
-    })
-      .then((response) => {
-        setSessionId(response.data.sessionId);
-        setMessages((prevState) => [
-          ...prevState,
-          { text: response.data.message, isUser: false },
-        ]);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+  const handleNewMessageChange = (event) => {
+    setNewMessage(event.target.value);
   };
 
-  const handleKeyDown = (event) => {
-    if (event.key === 'Enter') {
-      sendMessage();
+  const handleSendMessage = async () => {
+    if (newMessage === '') {
+      return;
+    }
+
+    const messageObject = {
+      message: newMessage,
+    };
+
+    try {
+      const response = await axios.post('https://example.com/api/messages', messageObject);
+      setMessages([...messages, { message: newMessage, sender: 'user' }, { message: response.data.message, sender: 'bot' }]);
+      setNewMessage('');
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -57,24 +32,14 @@ function ChatApp() {
     <div className="chat-container">
       <div className="chat-messages-container">
         {messages.map((message, index) => (
-          <div
-            key={index}
-            className={`chat-message ${message.isUser ? 'user' : 'bot'}`}
-          >
-            <span className="chat-message-text">{message.text}</span>
+          <div key={index} className={`chat-message ${message.sender}`}>
+            {message.message}
           </div>
         ))}
       </div>
       <div className="chat-input-container">
-        <input
-          type="text"
-          value={inputValue}
-          onChange={(event) => setInputValue(event.target.value)}
-          onKeyDown={handleKeyDown}
-          ref={inputRef}
-          className="chat-input"
-        />
-        <button onClick={sendMessage} className="chat-send-button">
+        <input type="text" className="chat-input" placeholder="Type a message..." value={newMessage} onChange={handleNewMessageChange} />
+        <button className="chat-send-button" onClick={handleSendMessage}>
           Send
         </button>
       </div>
@@ -83,6 +48,7 @@ function ChatApp() {
 }
 
 export default ChatApp;
+
 
 CSS
 .chat-container {

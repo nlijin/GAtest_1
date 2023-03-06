@@ -1,49 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import './ChatApp.css';
 import axios from 'axios';
 
 function ChatApp() {
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
-  const [userId, setUserId] = useState('USER_ID');
   const [sessionId, setSessionId] = useState('');
   const inputRef = useRef(null);
-
-  useEffect(() => {
-    axios.get('https://your-api-endpoint.com/session', {
-      params: {
-        userId,
-      },
-    })
-      .then((response) => {
-        setSessionId(response.data.sessionId);
-        sendInitialMessage();
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  }, [userId]);
-
-  const sendInitialMessage = () => {
-    const message = {
-      text: '',
-      isUser: false,
-    };
-
-    axios.post('https://your-api-endpoint.com/message', {
-      sessionId,
-      message: {
-        text: message.text,
-        isUser: message.isUser,
-      },
-    })
-      .then((response) => {
-        setMessages((prevState) => [...prevState, response.data]);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
 
   const sendMessage = () => {
     const message = {
@@ -54,7 +17,7 @@ function ChatApp() {
     setMessages((prevState) => [...prevState, message]);
     setInputValue('');
 
-    axios.post('https://your-api-endpoint.com/message', {
+    axios.post('https://your-api-endpoint.com/chatbot', {
       sessionId,
       message: {
         text: message.text,
@@ -62,7 +25,8 @@ function ChatApp() {
       },
     })
       .then((response) => {
-        setMessages((prevState) => [...prevState, response.data]);
+        setSessionId(response.data.sessionId);
+        setMessages((prevState) => [...prevState, response.data.message]);
       })
       .catch((error) => {
         console.log(error);

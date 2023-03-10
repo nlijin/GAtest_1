@@ -216,3 +216,115 @@ const MyForm: React.FC<MyFormProps> = ({ onSubmit }) => {
 
 export default MyForm;
 
+
+new form
+import React, { useState } from 'react';
+
+interface MyFormProps {
+  onSubmit: (data: FormData) => void;
+}
+
+interface FormData {
+  input1: string;
+  input2: string;
+  input3: string;
+  input4: string;
+}
+
+const MyForm: React.FC<MyFormProps> = ({ onSubmit }) => {
+  const [formData, setFormData] = useState<FormData>({
+    input1: '',
+    input2: '',
+    input3: '',
+    input4: '',
+  });
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    onSubmit(formData);
+  };
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
+    setFormData(prevState => ({ ...prevState, [name]: value }));
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <div>
+        <label>
+          Input 1:
+          <input
+            type="text"
+            name="input1"
+            value={formData.input1}
+            onChange={handleInputChange}
+          />
+        </label>
+      </div>
+      <div>
+        <label>
+          Input 2:
+          <input
+            type="text"
+            name="input2"
+            value={formData.input2}
+            onChange={handleInputChange}
+          />
+        </label>
+      </div>
+      <div>
+        <label>
+          Input 3:
+          <input
+            type="text"
+            name="input3"
+            value={formData.input3}
+            onChange={handleInputChange}
+          />
+        </label>
+      </div>
+      <div>
+        <label>
+          Input 4:
+          <input
+            type="text"
+            name="input4"
+            value={formData.input4}
+            onChange={handleInputChange}
+          />
+        </label>
+      </div>
+      <button type="submit">Submit</button>
+    </form>
+  );
+};
+
+export default MyForm;
+
+
+import React from 'react';
+import MyForm from './MyForm';
+
+interface FormValues {
+  input1: string;
+  input2: string;
+  input3: string;
+  input4: string;
+}
+
+const onSubmit = (data: FormValues) => {
+  // Do something with the form data
+  console.log(data);
+};
+
+const App: React.FC = () => {
+  return (
+    <div>
+      <MyForm onSubmit={onSubmit} />
+    </div>
+  );
+};
+
+export default App;
+

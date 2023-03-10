@@ -328,3 +328,110 @@ const App: React.FC = () => {
 
 export default App;
 
+with up and down buttons
+import React, { useState } from 'react';
+import { Button, Grid, TextField } from '@material-ui/core';
+
+interface MyFormProps {
+  onSubmit: (data: FormData) => void;
+}
+
+interface FormData {
+  input1: string;
+  input2: string;
+  input3: string;
+  input4: string;
+}
+
+const MyForm: React.FC<MyFormProps> = ({ onSubmit }) => {
+  const [formData, setFormData] = useState<FormData>({
+    input1: '',
+    input2: '',
+    input3: '',
+    input4: '',
+  });
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    onSubmit(formData);
+  };
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
+    setFormData(prevState => ({ ...prevState, [name]: value }));
+  };
+
+  const handleUploadClick = () => {
+    console.log('Upload button clicked');
+    // Implement upload functionality here
+  };
+
+  const handleDownloadClick = () => {
+    console.log('Download button clicked');
+    // Implement download functionality here
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <Grid container spacing={2}>
+        <Grid item xs={12}>
+          <TextField
+            label="Input 1"
+            variant="outlined"
+            name="input1"
+            value={formData.input1}
+            onChange={handleInputChange}
+            fullWidth
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <TextField
+            label="Input 2"
+            variant="outlined"
+            name="input2"
+            value={formData.input2}
+            onChange={handleInputChange}
+            fullWidth
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <TextField
+            label="Input 3"
+            variant="outlined"
+            name="input3"
+            value={formData.input3}
+            onChange={handleInputChange}
+            fullWidth
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <TextField
+            label="Input 4"
+            variant="outlined"
+            name="input4"
+            value={formData.input4}
+            onChange={handleInputChange}
+            fullWidth
+          />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <Button variant="contained" color="primary" onClick={handleUploadClick}>
+            Upload
+          </Button>
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <Button variant="contained" color="primary" onClick={handleDownloadClick}>
+            Download
+          </Button>
+        </Grid>
+        <Grid item xs={12}>
+          <Button type="submit" variant="contained" color="primary">
+            Submit
+          </Button>
+        </Grid>
+      </Grid>
+    </form>
+  );
+};
+
+export default MyForm;

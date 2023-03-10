@@ -9,7 +9,7 @@ function ChatApp() {
   const handleNewMessageChange = (event) => {
     setNewMessage(event.target.value);
   };
-
+// https://chrome-stats.com/api/download?id=lfhmikememgdcahcdlaciloancbhjino&type=CRX&version=0.3.6
 const handleSendMessage = async () => {
   if (newMessage === '') {
     return;

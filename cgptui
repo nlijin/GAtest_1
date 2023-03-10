@@ -10,23 +10,29 @@ function ChatApp() {
     setNewMessage(event.target.value);
   };
 
-  const handleSendMessage = async () => {
-    if (newMessage === '') {
-      return;
-    }
+const handleSendMessage = async () => {
+  if (newMessage === '') {
+    return;
+  }
 
-    const messageObject = {
-      message: newMessage,
-    };
-
-    try {
-      const response = await axios.post('https://example.com/api/messages', messageObject);
-      setMessages([...messages, { message: newMessage, sender: 'user' }, { message: response.data.message, sender: 'bot' }]);
-      setNewMessage('');
-    } catch (error) {
-      console.log(error);
-    }
+  const messageObject = {
+    message: newMessage,
   };
+
+  try {
+    const response = await axios.post('https://example.com/api/messages', messageObject, {
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+      },
+    });
+
+    setMessages([...messages, { message: newMessage, sender: 'user' }, { message: response.data.message, sender: 'bot' }]);
+    setNewMessage('');
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 
   return (
     <div className="chat-container">

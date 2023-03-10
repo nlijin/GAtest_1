@@ -137,3 +137,82 @@ CSS
   background-color: #0066cc;
 }
 
+
+typescript
+import React, { useState } from 'react';
+import { TextField, Button, Box } from '@material-ui/core';
+
+interface MyFormProps {
+  onSubmit: (data: FormData) => void;
+}
+
+interface FormData {
+  input1: string;
+  input2: string;
+  input3: string;
+  input4: string;
+}
+
+const MyForm: React.FC<MyFormProps> = ({ onSubmit }) => {
+  const [formData, setFormData] = useState<FormData>({
+    input1: '',
+    input2: '',
+    input3: '',
+    input4: '',
+  });
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    onSubmit(formData);
+  };
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
+    setFormData(prevState => ({ ...prevState, [name]: value }));
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <Box display="flex" flexDirection="column" alignItems="center">
+        <TextField
+          label="Input 1"
+          name="input1"
+          value={formData.input1}
+          onChange={handleInputChange}
+          margin="normal"
+          variant="outlined"
+        />
+        <TextField
+          label="Input 2"
+          name="input2"
+          value={formData.input2}
+          onChange={handleInputChange}
+          margin="normal"
+          variant="outlined"
+        />
+        <TextField
+          label="Input 3"
+          name="input3"
+          value={formData.input3}
+          onChange={handleInputChange}
+          margin="normal"
+          variant="outlined"
+        />
+        <TextField
+          label="Input 4"
+          name="input4"
+          value={formData.input4}
+          onChange={handleInputChange}
+          margin="normal"
+          variant="outlined"
+        />
+        <Button type="submit" variant="contained" color="primary">
+          Submit
+        </Button>
+      </Box>
+    </form>
+  );
+};
+
+export default MyForm;
+

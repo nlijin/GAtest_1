@@ -1,0 +1,36 @@
+import React, { useState } from 'react';
+import axios from 'axios';
+
+function ChatbotComponent() {
+  const [messages, setMessages] = useState([]);
+
+  const handleMessageSubmit = async (event) => {
+    event.preventDefault();
+    const userInput = event.target.elements.userInput.value;
+
+    const response = await axios.post('https://your-api-endpoint.com/chatbot', { message: userInput });
+    const chatbotResponse = response.data;
+
+    setMessages([...messages, { userMessage: userInput, chatbotMessage: chatbotResponse }]);
+  };
+
+  return (
+    <div>
+      <h1>Chatbot</h1>
+      <div>
+        {messages.map((message, index) => (
+          <div key={index}>
+            <p>{message.userMessage}</p>
+            <p>{message.chatbotMessage}</p>
+          </div>
+        ))}
+      </div>
+      <form onSubmit={handleMessageSubmit}>
+        <input type="text" name="userInput" />
+        <button type="submit">Send</button>
+      </form>
+    </div>
+  );
+}
+
+export default ChatbotComponent;

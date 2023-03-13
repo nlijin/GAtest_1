@@ -1,0 +1,73 @@
+import React, { useState } from "react";
+
+interface Props {
+  title: string;
+}
+
+const Header: React.FC<Props> = ({ title }) => {
+  return (
+    <header>
+      <h1>{title}</h1>
+    </header>
+  );
+};
+
+const Footer: React.FC = () => {
+  return (
+    <footer>
+      <p>&copy; 2023 - ChatGPT</p>
+    </footer>
+  );
+};
+
+const Main: React.FC = () => {
+  const [input1, setInput1] = useState("");
+  const [input2, setInput2] = useState("");
+  const [input3, setInput3] = useState("");
+  const [input4, setInput4] = useState("");
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    console.log(input1, input2, input3, input4);
+  };
+
+  const handleUpload = () => {
+    console.log("Upload clicked");
+  };
+
+  const handleDownload = () => {
+    console.log("Download clicked");
+  };
+
+  return (
+    <main>
+      <section>
+        <form onSubmit={handleSubmit}>
+          <label>
+            Input 1:
+            <input type="text" value={input1} onChange={(e) => setInput1(e.target.value)} />
+          </label>
+          <label>
+            Input 2:
+            <input type="text" value={input2} onChange={(e) => setInput2(e.target.value)} />
+          </label>
+          <label>
+            Input 3:
+            <input type="text" value={input3} onChange={(e) => setInput3(e.target.value)} />
+          </label>
+          <label>
+            Input 4:
+            <input type="text" value={input4} onChange={(e) => setInput4(e.target.value)} />
+          </label>
+          <button type="submit">Submit</button>
+        </form>
+      </section>
+      <section>
+        <button onClick={handleUpload}>Upload</button>
+        <button onClick={handleDownload}>Download</button>
+      </section>
+    </main>
+  );
+};
+
+export { Header, Footer, Main };

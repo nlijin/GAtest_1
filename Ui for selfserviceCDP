@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 import { AppBar, Toolbar, Typography, Container, Grid, TextField, Button } from "@material-ui/core";
 
 interface Props {
@@ -25,44 +26,26 @@ const Footer: React.FC = () => {
   );
 };
 
-const Main: React.FC = () => {
-  const [input1, setInput1] = useState("");
-  const [input2, setInput2] = useState("");
-  const [input3, setInput3] = useState("");
-  const [input4, setInput4] = useState("");
-
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    console.log(input1, input2, input3, input4);
-  };
-
-  const handleUpload = () => {
-    console.log("Upload clicked");
-  };
-
-  const handleDownload = () => {
-    console.log("Download clicked");
-  };
-
+const Home: React.FC = () => {
   return (
     <Container maxWidth="md">
       <Grid container spacing={3}>
         <Grid item xs={12} sm={6}>
-          <form onSubmit={handleSubmit}>
-            <TextField label="Input 1" value={input1} onChange={(e) => setInput1(e.target.value)} fullWidth />
-            <TextField label="Input 2" value={input2} onChange={(e) => setInput2(e.target.value)} fullWidth />
-            <TextField label="Input 3" value={input3} onChange={(e) => setInput3(e.target.value)} fullWidth />
-            <TextField label="Input 4" value={input4} onChange={(e) => setInput4(e.target.value)} fullWidth />
-            <Button type="submit" variant="contained" color="primary" fullWidth>
+          <form>
+            <TextField label="Input 1" fullWidth />
+            <TextField label="Input 2" fullWidth />
+            <TextField label="Input 3" fullWidth />
+            <TextField label="Input 4" fullWidth />
+            <Button variant="contained" color="primary" fullWidth>
               Submit
             </Button>
           </form>
         </Grid>
         <Grid item xs={12} sm={6}>
-          <Button variant="contained" color="secondary" onClick={handleUpload} fullWidth>
+          <Button variant="contained" color="secondary" fullWidth>
             Upload
           </Button>
-          <Button variant="contained" color="primary" onClick={handleDownload} fullWidth>
+          <Button variant="contained" color="primary" fullWidth>
             Download
           </Button>
         </Grid>
@@ -71,5 +54,44 @@ const Main: React.FC = () => {
   );
 };
 
-export { Header, Footer, Main };
+const Page1: React.FC = () => {
+  return (
+    <Container maxWidth="md">
+      <Typography variant="h4" align="center">
+        Page 1
+      </Typography>
+    </Container>
+  );
+};
 
+const Page2: React.FC = () => {
+  return (
+    <Container maxWidth="md">
+      <Typography variant="h4" align="center">
+        Page 2
+      </Typography>
+    </Container>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <Router>
+      <Header title="My App" />
+      <Switch>
+        <Route exact path="/">
+          <Home />
+        </Route>
+        <Route path="/page1">
+          <Page1 />
+        </Route>
+        <Route path="/page2">
+          <Page2 />
+        </Route>
+      </Switch>
+      <Footer />
+    </Router>
+  );
+};
+
+export default App;

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { AppBar, Toolbar, Typography, Container, Grid, TextField, Button } from "@material-ui/core";
 
 interface Props {
   title: string;
@@ -6,16 +7,20 @@ interface Props {
 
 const Header: React.FC<Props> = ({ title }) => {
   return (
-    <header>
-      <h1>{title}</h1>
-    </header>
+    <AppBar position="static">
+      <Toolbar>
+        <Typography variant="h6">{title}</Typography>
+      </Toolbar>
+    </AppBar>
   );
 };
 
 const Footer: React.FC = () => {
   return (
     <footer>
-      <p>&copy; 2023 - ChatGPT</p>
+      <Typography variant="body2" color="textSecondary" align="center">
+        &copy; 2023 - ChatGPT
+      </Typography>
     </footer>
   );
 };
@@ -40,34 +45,31 @@ const Main: React.FC = () => {
   };
 
   return (
-    <main>
-      <section>
-        <form onSubmit={handleSubmit}>
-          <label>
-            Input 1:
-            <input type="text" value={input1} onChange={(e) => setInput1(e.target.value)} />
-          </label>
-          <label>
-            Input 2:
-            <input type="text" value={input2} onChange={(e) => setInput2(e.target.value)} />
-          </label>
-          <label>
-            Input 3:
-            <input type="text" value={input3} onChange={(e) => setInput3(e.target.value)} />
-          </label>
-          <label>
-            Input 4:
-            <input type="text" value={input4} onChange={(e) => setInput4(e.target.value)} />
-          </label>
-          <button type="submit">Submit</button>
-        </form>
-      </section>
-      <section>
-        <button onClick={handleUpload}>Upload</button>
-        <button onClick={handleDownload}>Download</button>
-      </section>
-    </main>
+    <Container maxWidth="md">
+      <Grid container spacing={3}>
+        <Grid item xs={12} sm={6}>
+          <form onSubmit={handleSubmit}>
+            <TextField label="Input 1" value={input1} onChange={(e) => setInput1(e.target.value)} fullWidth />
+            <TextField label="Input 2" value={input2} onChange={(e) => setInput2(e.target.value)} fullWidth />
+            <TextField label="Input 3" value={input3} onChange={(e) => setInput3(e.target.value)} fullWidth />
+            <TextField label="Input 4" value={input4} onChange={(e) => setInput4(e.target.value)} fullWidth />
+            <Button type="submit" variant="contained" color="primary" fullWidth>
+              Submit
+            </Button>
+          </form>
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <Button variant="contained" color="secondary" onClick={handleUpload} fullWidth>
+            Upload
+          </Button>
+          <Button variant="contained" color="primary" onClick={handleDownload} fullWidth>
+            Download
+          </Button>
+        </Grid>
+      </Grid>
+    </Container>
   );
 };
 
 export { Header, Footer, Main };
+

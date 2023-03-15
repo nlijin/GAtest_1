@@ -95,3 +95,144 @@ const App: React.FC = () => {
 };
 
 export default App;
+
+
+
+import React, { useState } from "react";
+import {
+  Button,
+  Container,
+  FormControl,
+  FormHelperText,
+  Input,
+  InputLabel,
+  makeStyles,
+  Paper,
+  Typography,
+} from "@material-ui/core";
+
+const useStyles = makeStyles((theme) => ({
+  root: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    minHeight: "100vh",
+  },
+  form: {
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: theme.spacing(4),
+  },
+  inputs: {
+    margin: theme.spacing(1),
+    minWidth: 200,
+  },
+  buttons: {
+    margin: theme.spacing(2),
+  },
+  fileInput: {
+    display: "none",
+  },
+  fileInputLabel: {
+    display: "flex",
+    alignItems: "center",
+    margin: theme.spacing(1),
+  },
+}));
+
+const MyComponent: React.FC = () => {
+  const classes = useStyles();
+  const [formState, setFormState] = useState({
+    input1: "",
+    input2: "",
+    input3: "",
+    input4: "",
+  });
+
+  const handleInputChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ): void => {
+    setFormState({
+      ...formState,
+      [event.target.name]: event.target.value,
+    });
+  };
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
+    event.preventDefault();
+    console.log(formState);
+    // submit logic here
+  };
+
+  const handleFileUpload = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ): void => {
+    console.log(event.target.files);
+    // file upload logic here
+  };
+
+  const handleDownload = (): void => {
+    console.log("download button clicked");
+    // download logic here
+  };
+
+  return (
+    <div className={classes.root}>
+      <Container maxWidth="sm">
+        <Paper className={classes.form} elevation={3}>
+          <Typography variant="h5" gutterBottom>
+            My Form
+          </Typography>
+          <form onSubmit={handleSubmit}>
+            <FormControl className={classes.inputs}>
+              <InputLabel htmlFor="input1">Input 1</InputLabel>
+              <Input
+                id="input1"
+                name="input1"
+                value={formState.input1}
+                onChange={handleInputChange}
+              />
+            </FormControl>
+            <FormControl className={classes.inputs}>
+              <InputLabel htmlFor="input2">Input 2</InputLabel>
+              <Input
+                id="input2"
+                name="input2"
+                value={formState.input2}
+                onChange={handleInputChange}
+              />
+            </FormControl>
+            <FormControl className={classes.inputs}>
+              <InputLabel htmlFor="input3">Input 3</InputLabel>
+              <Input
+                id="input3"
+                name="input3"
+                value={formState.input3}
+                onChange={handleInputChange}
+              />
+            </FormControl>
+            <FormControl className={classes.inputs}>
+              <InputLabel htmlFor="input4">Input 4</InputLabel>
+              <Input
+                id="input4"
+                name="input4"
+                value={formState.input4}
+                onChange={handleInputChange}
+              />
+            </FormControl>
+            <Button
+              className={classes.buttons}
+              variant="contained"
+              color="primary"
+              type="submit"
+            >
+              Submit
+            </Button>
+          </form>
+        </Paper>
+      </Container>
+      <Container maxWidth="sm">
+        <Paper className={classes.form}
+

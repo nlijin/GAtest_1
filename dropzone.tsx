@@ -59,3 +59,38 @@ const FileDropzone: React.FC<Props> = ({
 };
 
 export default FileDropzone;
+
+import React from "react";
+import { makeStyles } from "@material-ui/core/styles";
+import { AppBar, Toolbar, Typography } from "@material-ui/core";
+
+const useStyles = makeStyles((theme) => ({
+  appBar: {
+    top: "auto",
+    bottom: 0,
+  },
+  toolbar: {
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+}));
+
+function Footer() {
+  const classes = useStyles();
+
+  return (
+    <AppBar position="fixed" color="primary" className={classes.appBar}>
+      <Toolbar className={classes.toolbar}>
+        <Typography variant="subtitle1" color="inherit">
+          © 2023 Example Company
+        </Typography>
+        <Typography variant="subtitle1" color="inherit">
+          All rights reserved
+        </Typography>
+      </Toolbar>
+    </AppBar>
+  );
+}
+
+export default Footer;
+

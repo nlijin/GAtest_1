@@ -103,6 +103,38 @@ export default Chatbot;
 //That's it! Your Chatbot functional component should now be able to interact with your AWS Lex Chatbot API Gateway by sending a POST request and displaying the chatbot's response in the component.
 
 
+const Chatbot = () => {
+  const [input, setInput] = useState('');
+  const [messageHistory, setMessageHistory] = useState([]);
+
+  const handleInputChange = (event) => {
+    setInput(event.target.value);
+  }
+
+  const sendPostRequest = () => {
+    axios.post('YOUR_API_GATEWAY_ENDPOINT', { message: input })
+      .then(response => {
+        setMessageHistory([...messageHistory, { message: input, response: response.data.message }]);
+        setInput(''); // Clear input after sending message
+      })
+      .catch(error => {
+        console.error(error);
+      });
+  }
+
+  return (
+    <div>
+      <input type="text" value={input} onChange={handleInputChange} />
+      <button onClick={sendPostRequest}>Send</button>
+      {messageHistory.map((message, index) => (
+        <div key={index}>
+          <p>User: {message.message}</p>
+          <p>Chatbot: {message.response}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 
 

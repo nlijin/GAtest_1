@@ -33,4 +33,77 @@ function ChatbotComponent() {
   );
 }
 
+
+
+
+
+//can you give me help me with a functional component for the same above code
+//Sure, here's how you can create a functional component in React for interacting with your AWS Lex Chatbot API Gateway using Axios:
+
+Install Axios:
+
+//You can install axios, which is a popular HTTP client for making API requests, using the following command:
+
+//Copy code
+//npm install axios
+
+Import React and Axios:
+
+//Import React and Axios at the top of your component file using the following code:
+
+//python
+//Copy code
+
+import React, { useState } from 'react';
+import axios from 'axios';
+
+//Create a functional component:
+//Create a new function in your component file called Chatbot that will contain the code for your chatbot component. The component takes no props, so it will be a simple function with no parameters. Add the following code:
+
+//javascript
+//Copy code
+
+const Chatbot = () => {
+  const [input, setInput] = useState('');
+  const [response, setResponse] = useState('');
+  
+  const handleInputChange = (event) => {
+    setInput(event.target.value);
+  }
+  
+  const sendPostRequest = () => {
+    axios.post('YOUR_API_GATEWAY_ENDPOINT', { message: input })
+      .then(response => {
+        setResponse(response.data.message);
+      })
+      .catch(error => {
+        console.error(error);
+      });
+  }
+  
+  return (
+    <div>
+      <input type="text" value={input} onChange={handleInputChange} />
+      <button onClick={sendPostRequest}>Send</button>
+      <p>{response}</p>
+    </div>
+  );
+}
+//Replace YOUR_API_GATEWAY_ENDPOINT with your actual endpoint:
+//Make sure to replace the YOUR_API_GATEWAY_ENDPOINT placeholder in the sendPostRequest function with the actual endpoint for your AWS Lex Chatbot API Gateway.
+
+//Export the component:
+//Export the Chatbot component so that it can be used in other parts of your React application. Add the following code at the end of the file:
+
+//javascript
+//Copy code
+
+export default Chatbot;
+
+//That's it! Your Chatbot functional component should now be able to interact with your AWS Lex Chatbot API Gateway by sending a POST request and displaying the chatbot's response in the component.
+
+
+
+
+
 export default ChatbotComponent;

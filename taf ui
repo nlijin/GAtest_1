@@ -1,260 +1,63 @@
-import React, { useState } from 'react';
-import { TextField, FormControl, InputLabel, Select, MenuItem, Grid, Button } from '@material-ui/core';
+import { useState } from 'react';
+import { TextField, Button, Box } from '@material-ui/core';
 
-interface ProjectFormProps {
-  onSubmit: (data: { projectName: string, epic: string, assignee: string, jiraSecretName: string }) => void;
+interface Props {
+  onSubmit: (inputValues: string[]) => void;
 }
 
-export const ProjectForm: React.FC<ProjectFormProps> = ({ onSubmit }) => {
-  const [projectName, setProjectName] = useState('');
-  const [epic, setEpic] = useState('');
-  const [assignee, setAssignee] = useState('');
-  const [jiraSecretName, setJiraSecretName] = useState('');
+const DynamicInputsForm: React.FC<Props> = ({ onSubmit }) => {
+  const [inputValues, setInputValues] = useState<string[]>(['', '', '', '']);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    onSubmit({ projectName, epic, assignee, jiraSecretName });
-  }
+  const handleChange = (index: number, value: string) => {
+    const newInputValues = [...inputValues];
+    newInputValues[index] = value;
+    setInputValues(newInputValues);
+  };
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    onSubmit(inputValues);
+  };
 
   return (
     <form onSubmit={handleSubmit}>
-      <Grid container spacing={3}>
-        <Grid item xs={12}>
-          <TextField
-            label="Project Name"
-            variant="outlined"
-            fullWidth
-            required
-            value={projectName}
-            onChange={e => setProjectName(e.target.value)}
-          />
-        </Grid>
-        <Grid item xs={12}>
-          <TextField
-            label="Epic"
-            variant="outlined"
-            fullWidth
-            required
-            value={epic}
-            onChange={e => setEpic(e.target.value)}
-          />
-        </Grid>
-        <Grid item xs={12}>
-          <FormControl variant="outlined" fullWidth>
-            <InputLabel id="assignee-label">Assignee</InputLabel>
-            <Select
-              labelId="assignee-label"
-              value={assignee}
-              onChange={e => setAssignee(e.target.value as string)}
-              label="Assignee"
-              required
-            >
-              <MenuItem value="john">John</MenuItem>
-              <MenuItem value="jane">Jane</MenuItem>
-              <MenuItem value="jim">Jim</MenuItem>
-            </Select>
-          </FormControl>
-        </Grid>
-        <Grid item xs={12}>
-          <TextField
-            label="Jira Secret Name"
-            variant="outlined"
-            fullWidth
-            required
-            value={jiraSecretName}
-            onChange={e => setJiraSecretName(e.target.value)}
-          />
-        </Grid>
-        <Grid item xs={12}>
-          <Button type="submit" variant="contained" color="primary">Submit</Button>
-        </Grid>
-      </Grid>
+      <Box display="flex" flexDirection="row">
+        <TextField
+          label="Project Name"
+          variant="outlined"
+          value={inputValues[0]}
+          onChange={(event) => handleChange(0, event.target.value)}
+          style={{ marginRight: '8px' }}
+        />
+        <TextField
+          label="Epic"
+          variant="outlined"
+          value={inputValues[1]}
+          onChange={(event) => handleChange(1, event.target.value)}
+          style={{ marginRight: '8px' }}
+        />
+        <TextField
+          label="Assignee"
+          variant="outlined"
+          value={inputValues[2]}
+          onChange={(event) => handleChange(2, event.target.value)}
+          style={{ marginRight: '8px' }}
+        />
+        <TextField
+          label="Jira Secret Key"
+          variant="outlined"
+          value={inputValues[3]}
+          onChange={(event) => handleChange(3, event.target.value)}
+          style={{ marginRight: '8px' }}
+        />
+        <Button variant="contained" color="primary" type="submit">
+          Submit
+        </Button>
+      </Box>
     </form>
   );
 };
 
+export default DynamicInputsForm;
 
-
-import React, { useState } from 'react';
-import { TextField, Grid, Button, Divider } from '@material-ui/core';
-
-interface TestCase {
-  id: string;
-  name: string;
-  input1: string;
-  input2: string;
-  input3: string;
-  input4: string;
-}
-
-interface TestPlanFormProps {
-  onSubmit: (data: { testPlanId: string, testCases: TestCase[] }) => void;
-}
-
-export const TestPlanForm: React.FC<TestPlanFormProps> = ({ onSubmit }) => {
-  const [testPlanId, setTestPlanId] = useState('');
-  const [testCases, setTestCases] = useState<TestCase[]>([{ id: '', name: '', input1: '', input2: '', input3: '', input4: '' }]);
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    onSubmit({ testPlanId, testCases });
-  }
-
-  const handleAddTestCase = () => {
-    setTestCases([...testCases, { id: '', name: '', input1: '', input2: '', input3: '', input4: '' }]);
-  }
-
-  const handleRemoveTestCase = (index: number) => {
-    setTestCases([...testCases.slice(0, index), ...testCases.slice(index + 1)]);
-  }
-
-  const handleTestCaseChange = (index: number, field: keyof TestCase, value: string) => {
-    const updatedTestCases = [...testCases];
-    updatedTestCases[index][field] = value;
-    setTestCases(updatedTestCases);
-  }
-
-  return (
-    <form onSubmit={handleSubmit}>
-      <Grid container spacing={3}>
-        <Grid item xs={12}>
-          <TextField
-            label="Test Plan ID"
-            variant="outlined"
-            fullWidth
-            required
-            value={testPlanId}
-onChange={(e) => setTestPlanId(e.target.value)}
-/>
-</Grid>
-{testCases.map((testCase, index) => (
-<React.Fragment key={index}>
-<Grid item xs={12}>
-<Divider />
-</Grid>
-<Grid item xs={12}>
-<TextField
-label="Test Case ID"
-variant="outlined"
-fullWidth
-required
-value={testCase.id}
-onChange={(e) => handleTestCaseChange(index, 'id', e.target.value)}
-/>
-</Grid>
-<Grid item xs={12}>
-<TextField
-label="Test Case Name"
-variant="outlined"
-fullWidth
-required
-value={testCase.name}
-onChange={(e) => handleTestCaseChange(index, 'name', e.target.value)}
-/>
-</Grid>
-<Grid item xs={12}>
-<TextField
-label="Input 1"
-variant="outlined"
-fullWidth
-required
-value={testCase.input1}
-onChange={(e) => handleTestCaseChange(index, 'input1', e.target.value)}
-/>
-</Grid>
-<Grid item xs={12}>
-<TextField
-label="Input 2"
-variant="outlined"
-fullWidth
-required
-value={testCase.input2}
-onChange={(e) => handleTestCaseChange(index, 'input2', e.target.value)}
-/>
-</Grid>
-<Grid item xs={12}>
-<TextField
-label="Input 3"
-variant="outlined"
-fullWidth
-required
-value={testCase.input3}
-onChange={(e) => handleTestCaseChange(index, 'input3', e.target.value)}
-/>
-</Grid>
-<Grid item xs={12}>
-<TextField
-label="Input 4"
-variant="outlined"
-fullWidth
-required
-value={testCase.input4}
-onChange={(e) => handleTestCaseChange(index, 'input4', e.target.value)}
-/>
-</Grid>
-<Grid item xs={12}>
-<Button variant="outlined" color="secondary" onClick={() => handleRemoveTestCase(index)}>Remove Test Case</Button>
-</Grid>
-</React.Fragment>
-))}
-<Grid item xs={12}>
-<Button variant="outlined" color="primary" onClick={handleAddTestCase}>Add Test Case</Button>
-</Grid>
-<Grid item xs={12}>
-<Button type="submit" variant="contained" color="primary">Submit Test Plan</Button>
-</Grid>
-</Grid>
-</form>
-);
-};
-
-Note: This code defines a React functional component named "TestPlanForm". It receives an "onSubmit" prop that is a function to be called when the form is submitted, with the test plan ID and the list of test cases as arguments. It renders a form with a text field for the test plan ID and a list of test cases, where each test case has several text fields for input data and a button to remove it from the list. Users can add new test cases with another button, and finally submit the form with a submit button. The state of the component is managed using the useState hook.
-
-
-import React, { useState } from 'react';
-import { TextField, Grid, Button } from '@material-ui/core';
-
-interface ProjectFormProps {
-  onSubmit: (data: { name: string, description: string }) => void;
-}
-
-export const ProjectForm: React.FC<ProjectFormProps> = ({ onSubmit }) => {
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    onSubmit({ name, description });
-  }
-
-  return (
-    <form onSubmit={handleSubmit}>
-      <Grid container spacing={3}>
-        <Grid item xs={12}>
-          <TextField
-            label="Project Name"
-            variant="outlined"
-            fullWidth
-            required
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-        </Grid>
-        <Grid item xs={12}>
-          <TextField
-            label="Project Description"
-            variant="outlined"
-            fullWidth
-            required
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-        </Grid>
-        <Grid item xs={12}>
-          <Button type="submit" variant="contained" color="primary">Create Project</Button>
-        </Grid>
-      </Grid>
-    </form>
-  );
-};
 

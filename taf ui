@@ -61,3 +61,72 @@ const DynamicInputsForm: React.FC<Props> = ({ onSubmit }) => {
 export default DynamicInputsForm;
 
 
+
+import React, { useState } from 'react';
+
+interface Props {
+  onTestPlanChange: (testPlan: TestPlan) => void;
+}
+
+interface TestPlan {
+  testPlanId: string;
+  testCaseIds: string[];
+}
+
+const TestPlanInput: React.FC<Props> = ({ onTestPlanChange }) => {
+  const [testPlan, setTestPlan] = useState<TestPlan>({ testPlanId: '', testCaseIds: [] });
+
+  const handleTestPlanIdChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newTestPlanId = event.target.value;
+    setTestPlan(prevTestPlan => ({ ...prevTestPlan, testPlanId: newTestPlanId }));
+    onTestPlanChange(testPlan);
+  };
+
+  const handleTestCaseIdChange = (event: React.ChangeEvent<HTMLInputElement>, index: number) => {
+    const newTestCaseId = event.target.value;
+    setTestPlan(prevTestPlan => {
+      const newTestCaseIds = [...prevTestPlan.testCaseIds];
+      newTestCaseIds[index] = newTestCaseId;
+      return { ...prevTestPlan, testCaseIds: newTestCaseIds };
+    });
+    onTestPlanChange(testPlan);
+  };
+
+  return (
+    <div>
+      <div>
+        <label htmlFor="testPlanIdInput">Test Plan id:</label>
+        <input
+          id="testPlanIdInput"
+          type="text"
+          value={testPlan.testPlanId}
+          onChange={handleTestPlanIdChange}
+        />
+      </div>
+      {testPlan.testCaseIds.map((testCaseId, index) => (
+        <div key={index}>
+          <label htmlFor={`testCaseIdInput${index}`}>Test Case {index + 1} id:</label>
+          <input
+            id={`testCaseIdInput${index}`}
+            type="text"
+            value={testCaseId}
+            onChange={event => handleTestCaseIdChange(event, index)}
+          />
+        </div>
+      ))}
+      <div>
+        <button
+          onClick={() =>
+            setTestPlan(prevTestPlan => ({ ...prevTestPlan, testCaseIds: [...prevTestPlan.testCaseIds, ''] }))
+          }
+        >
+          Add Test Case
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default TestPlanInput;
+
+

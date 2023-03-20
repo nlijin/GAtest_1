@@ -100,8 +100,28 @@ export const TestPlanForm: React.FC<TestPlanFormProps> = ({ onSubmit }) => {
     onSubmit({ testPlanId, testCases });
   }
 
+  const handleAddTestCase = () => {
+    setTestCases([...testCases, { id: '', name: '', input1: '', input2: '', input3: '', input4: '' }]);
+  }
 
-const TestPlanForm: React.FC<TestPlanFormProps>
-Type '({ onSubmit }: TestPlanFormProps) => void' is not assignable to type 'FC<TestPlanFormProps>'.
-  Type 'void' is not assignable to type 'ReactElement<any, any> | null'.ts(2322)
- 
+  const handleRemoveTestCase = (index: number) => {
+    setTestCases([...testCases.slice(0, index), ...testCases.slice(index + 1)]);
+  }
+
+  const handleTestCaseChange = (index: number, field: keyof TestCase, value: string) => {
+    const updatedTestCases = [...testCases];
+    updatedTestCases[index][field] = value;
+    setTestCases(updatedTestCases);
+  }
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <Grid container spacing={3}>
+        <Grid item xs={12}>
+          <TextField
+            label="Test Plan ID"
+            variant="outlined"
+            fullWidth
+            required
+            value={testPlanId
+

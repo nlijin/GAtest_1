@@ -123,5 +123,90 @@ export const TestPlanForm: React.FC<TestPlanFormProps> = ({ onSubmit }) => {
             variant="outlined"
             fullWidth
             required
-            value={testPlanId
+            value={testPlanId}
+onChange={(e) => setTestPlanId(e.target.value)}
+/>
+</Grid>
+{testCases.map((testCase, index) => (
+<React.Fragment key={index}>
+<Grid item xs={12}>
+<Divider />
+</Grid>
+<Grid item xs={12}>
+<TextField
+label="Test Case ID"
+variant="outlined"
+fullWidth
+required
+value={testCase.id}
+onChange={(e) => handleTestCaseChange(index, 'id', e.target.value)}
+/>
+</Grid>
+<Grid item xs={12}>
+<TextField
+label="Test Case Name"
+variant="outlined"
+fullWidth
+required
+value={testCase.name}
+onChange={(e) => handleTestCaseChange(index, 'name', e.target.value)}
+/>
+</Grid>
+<Grid item xs={12}>
+<TextField
+label="Input 1"
+variant="outlined"
+fullWidth
+required
+value={testCase.input1}
+onChange={(e) => handleTestCaseChange(index, 'input1', e.target.value)}
+/>
+</Grid>
+<Grid item xs={12}>
+<TextField
+label="Input 2"
+variant="outlined"
+fullWidth
+required
+value={testCase.input2}
+onChange={(e) => handleTestCaseChange(index, 'input2', e.target.value)}
+/>
+</Grid>
+<Grid item xs={12}>
+<TextField
+label="Input 3"
+variant="outlined"
+fullWidth
+required
+value={testCase.input3}
+onChange={(e) => handleTestCaseChange(index, 'input3', e.target.value)}
+/>
+</Grid>
+<Grid item xs={12}>
+<TextField
+label="Input 4"
+variant="outlined"
+fullWidth
+required
+value={testCase.input4}
+onChange={(e) => handleTestCaseChange(index, 'input4', e.target.value)}
+/>
+</Grid>
+<Grid item xs={12}>
+<Button variant="outlined" color="secondary" onClick={() => handleRemoveTestCase(index)}>Remove Test Case</Button>
+</Grid>
+</React.Fragment>
+))}
+<Grid item xs={12}>
+<Button variant="outlined" color="primary" onClick={handleAddTestCase}>Add Test Case</Button>
+</Grid>
+<Grid item xs={12}>
+<Button type="submit" variant="contained" color="primary">Submit Test Plan</Button>
+</Grid>
+</Grid>
+</form>
+);
+};
+
+Note: This code defines a React functional component named "TestPlanForm". It receives an "onSubmit" prop that is a function to be called when the form is submitted, with the test plan ID and the list of test cases as arguments. It renders a form with a text field for the test plan ID and a list of test cases, where each test case has several text fields for input data and a button to remove it from the list. Users can add new test cases with another button, and finally submit the form with a submit button. The state of the component is managed using the useState hook.
 

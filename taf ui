@@ -100,4 +100,8 @@ export const TestPlanForm: React.FC<TestPlanFormProps> = ({ onSubmit }) => {
     onSubmit({ testPlanId, testCases });
   }
 
+
+const TestPlanForm: React.FC<TestPlanFormProps>
+Type '({ onSubmit }: TestPlanFormProps) => void' is not assignable to type 'FC<TestPlanFormProps>'.
+  Type 'void' is not assignable to type 'ReactElement<any, any> | null'.ts(2322)
  

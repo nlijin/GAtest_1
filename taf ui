@@ -210,3 +210,51 @@ onChange={(e) => handleTestCaseChange(index, 'input4', e.target.value)}
 
 Note: This code defines a React functional component named "TestPlanForm". It receives an "onSubmit" prop that is a function to be called when the form is submitted, with the test plan ID and the list of test cases as arguments. It renders a form with a text field for the test plan ID and a list of test cases, where each test case has several text fields for input data and a button to remove it from the list. Users can add new test cases with another button, and finally submit the form with a submit button. The state of the component is managed using the useState hook.
 
+
+import React, { useState } from 'react';
+import { TextField, Grid, Button } from '@material-ui/core';
+
+interface ProjectFormProps {
+  onSubmit: (data: { name: string, description: string }) => void;
+}
+
+export const ProjectForm: React.FC<ProjectFormProps> = ({ onSubmit }) => {
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    onSubmit({ name, description });
+  }
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <Grid container spacing={3}>
+        <Grid item xs={12}>
+          <TextField
+            label="Project Name"
+            variant="outlined"
+            fullWidth
+            required
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <TextField
+            label="Project Description"
+            variant="outlined"
+            fullWidth
+            required
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <Button type="submit" variant="contained" color="primary">Create Project</Button>
+        </Grid>
+      </Grid>
+    </form>
+  );
+};
+

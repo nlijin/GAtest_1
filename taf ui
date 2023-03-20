@@ -1,82 +1,103 @@
-import React from 'react';
-import { makeStyles } from '@material-ui/core/styles';
-import { TextField, InputLabel, Select, MenuItem, FormControl, Grid } from '@material-ui/core';
+import React, { useState } from 'react';
+import { TextField, FormControl, InputLabel, Select, MenuItem, Grid, Button } from '@material-ui/core';
 
-const useStyles = makeStyles((theme) => ({
-  formControl: {
-    margin: theme.spacing(1),
-    minWidth: 120,
-  },
-  selectEmpty: {
-    marginTop: theme.spacing(2),
-  },
-}));
-
-interface Props {
-  project: string;
-  epic: string;
-  assignee: string;
-  jiraSecretName: string;
-  testPlanId: string;
-  testCases: { id: string; status: string; priority: string; }[];
+interface ProjectFormProps {
+  onSubmit: (data: { projectName: string, epic: string, assignee: string, jiraSecretName: string }) => void;
 }
 
-const MyComponent: React.FC<Props> = ({
-  project,
-  epic,
-  assignee,
-  jiraSecretName,
-  testPlanId,
-  testCases,
-}) => {
-  const classes = useStyles();
+export const ProjectForm: React.FC<ProjectFormProps> = ({ onSubmit }) => {
+  const [projectName, setProjectName] = useState('');
+  const [epic, setEpic] = useState('');
+  const [assignee, setAssignee] = useState('');
+  const [jiraSecretName, setJiraSecretName] = useState('');
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    onSubmit({ projectName, epic, assignee, jiraSecretName });
+  }
 
   return (
-    <Grid container spacing={2}>
-      <Grid item xs={6}>
-        <TextField label="Project" value={project} fullWidth />
-      </Grid>
-      <Grid item xs={6}>
-        <TextField label="Epic" value={epic} fullWidth />
-      </Grid>
-      <Grid item xs={6}>
-        <TextField label="Assignee" value={assignee} fullWidth />
-      </Grid>
-      <Grid item xs={6}>
-        <TextField label="JIRA Secret Name" value={jiraSecretName} fullWidth />
-      </Grid>
-      <Grid item xs={12}>
-        <TextField label="Test Plan ID" value={testPlanId} fullWidth />
-      </Grid>
-      {testCases.map(({ id, status, priority }) => (
-        <Grid container spacing={2} key={id}>
-          <Grid item xs={4}>
-            <TextField label="Test Case ID" value={id} fullWidth />
-          </Grid>
-          <Grid item xs={4}>
-            <FormControl className={classes.formControl} fullWidth>
-              <InputLabel id={`status-label-${id}`}>Status</InputLabel>
-              <Select labelId={`status-label-${id}`} value={status} fullWidth>
-                <MenuItem value="Pass">Pass</MenuItem>
-                <MenuItem value="Fail">Fail</MenuItem>
-                <MenuItem value="Not Run">Not Run</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={4}>
-            <FormControl className={classes.formControl} fullWidth>
-              <InputLabel id={`priority-label-${id}`}>Priority</InputLabel>
-              <Select labelId={`priority-label-${id}`} value={priority} fullWidth>
-                <MenuItem value="High">High</MenuItem>
-                <MenuItem value="Medium">Medium</MenuItem>
-                <MenuItem value="Low">Low</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
+    <form onSubmit={handleSubmit}>
+      <Grid container spacing={3}>
+        <Grid item xs={12}>
+          <TextField
+            label="Project Name"
+            variant="outlined"
+            fullWidth
+            required
+            value={projectName}
+            onChange={e => setProjectName(e.target.value)}
+          />
         </Grid>
-      ))}
-    </Grid>
+        <Grid item xs={12}>
+          <TextField
+            label="Epic"
+            variant="outlined"
+            fullWidth
+            required
+            value={epic}
+            onChange={e => setEpic(e.target.value)}
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <FormControl variant="outlined" fullWidth>
+            <InputLabel id="assignee-label">Assignee</InputLabel>
+            <Select
+              labelId="assignee-label"
+              value={assignee}
+              onChange={e => setAssignee(e.target.value as string)}
+              label="Assignee"
+              required
+            >
+              <MenuItem value="john">John</MenuItem>
+              <MenuItem value="jane">Jane</MenuItem>
+              <MenuItem value="jim">Jim</MenuItem>
+            </Select>
+          </FormControl>
+        </Grid>
+        <Grid item xs={12}>
+          <TextField
+            label="Jira Secret Name"
+            variant="outlined"
+            fullWidth
+            required
+            value={jiraSecretName}
+            onChange={e => setJiraSecretName(e.target.value)}
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <Button type="submit" variant="contained" color="primary">Submit</Button>
+        </Grid>
+      </Grid>
+    </form>
   );
 };
 
-export default MyComponent;
+
+
+import React, { useState } from 'react';
+import { TextField, Grid, Button, Divider } from '@material-ui/core';
+
+interface TestCase {
+  id: string;
+  name: string;
+  input1: string;
+  input2: string;
+  input3: string;
+  input4: string;
+}
+
+interface TestPlanFormProps {
+  onSubmit: (data: { testPlanId: string, testCases: TestCase[] }) => void;
+}
+
+export const TestPlanForm: React.FC<TestPlanFormProps> = ({ onSubmit }) => {
+  const [testPlanId, setTestPlanId] = useState('');
+  const [testCases, setTestCases] = useState<TestCase[]>([{ id: '', name: '', input1: '', input2: '', input3: '', input4: '' }]);
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    onSubmit({ testPlanId, testCases });
+  }
+
+ 

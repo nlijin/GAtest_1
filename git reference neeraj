@@ -1,0 +1,603 @@
+"""
+This Lambda function is responsible for creating EDB Core onboarding Git repositories
+"""
+# pylint: disable =C0209,C0303,W0621,E0401,W0613,R0912,R1702,R0915,C0103,R0914,W0707,W0612,C0303,C0301,W0611,C0411,R0913,E1121,W0703,W3101
+import os
+import json
+import shutil
+import git
+import logging
+import boto3
+import requests
+
+s3 = boto3.resource("s3")
+LOGGING_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
+logger = logging.getLogger()
+logger.setLevel(logging.getLevelName(LOGGING_LEVEL))
+GIT_SECRET = os.environ.get("GIT_SECRET", "")
+GIT_OWNER_NAME = os.environ.get("GIT_OWNER_NAME", "")
+CONFIGURATION_ITEM = os.environ.get("CONFIGURATION_ITEM", "")
+SNOW_REQUEST_PAYLOAD = {"CONFIGURATION_ITEM": CONFIGURATION_ITEM}
+GIT_TOKEN = ""
+API_URL = "https://api.github.com"
+S3_GIT_INITIAL_FILES_BUCKET = os.environ.get("S3_GIT_INITIAL_FILES_BUCKET", "lly-edp-codeconfig-us-east-2-dev")
+S3_GIT_INITIAL_FILES_FOLDER = os.environ.get("S3_GIT_INITIAL_FILES_FOLDER", "edb_core_onboarding_git_repository_creator")
+S3_GIT_REPO_CONTENT_FOLDER = os.environ.get("S3_GIT_REPO_CONTENT_FOLDER", "sample_repo")
+FROM_ADDRESS = os.environ.get('FROM_ADDRESS')
+SOURCE_ARN = os.environ.get('SES_ARN')
+REGION_NAME_SES = os.environ.get("REGION_NAME_SES", "")
+
+secret_client = boto3.client("secretsmanager")
+ses_client =  boto3.client('ses', region_name=REGION_NAME_SES)
+
+try:
+    GIT_TOKEN = secret_client.get_secret_value(
+        SecretId=GIT_SECRET)["SecretString"]
+except Exception as error:
+    logger.error(
+        "Exception occurred while retrieving secret :: %s", str(error))
+    raise error
+
+HEADERS = {
+    "Authorization": "token " + GIT_TOKEN,
+    "Accept": "application/vnd.github.v3+json"
+}
+
+
+class PayloadError(Exception):
+    """Exception raised for errors in the payload
+
+    Attributes:
+        expression -- input expression in which the error occurred
+        message -- explanation of the error
+    """
+
+    def __init__(self, msg):
+        super().__init__(msg)
+        if msg:
+            self.msg = msg
+        else:
+            self.msg = None
+
+
+def validate_payload(event):
+    """Utility function to validate lambda payload
+
+    Args:
+        event (dict): Lambda event
+
+    Raises:
+        Exception: Runtime exceptions
+
+    Returns:
+        dict: config dictionary
+    """
+    logger.info("Entered validate payload method.")
+    try:
+        github_repo_name = event.get("github_repo_name")
+        github_user_name = event.get("github_user_name")
+        fed_role_name = event.get("fed_role_name")
+        email_id = event.get("email_id")
+        # jira_id = event.get("jira_id")
+        cost_center = event.get("cost_center")
+        cost_center_approver = event.get("cost_center_approver")
+        system_owner = event.get("system_owner")
+        system_custodian = event.get("system_custodian")
+        primary_it_contact = event.get("primary_it_contact")
+        business_area = event.get("business_area")
+        project_center = event.get("project_center")
+        data_classification = event.get("data_classification")
+
+        payload_errors = []
+        if github_repo_name is None or github_repo_name == '':
+            error_message = "Please pass valid github_repo_name"
+            logger.error(error_message)
+            payload_errors.append(error_message)
+        if github_user_name is None or github_user_name == '':
+            error_message = "Please pass valid github_user_name"
+            logger.error(error_message)
+            payload_errors.append(error_message)
+        if fed_role_name is None or fed_role_name == '':
+            error_message = "Please pass valid fed_role_name"
+            logger.error(error_message)
+            payload_errors.append(error_message)
+        if email_id is None or email_id == '':
+            error_message = "Please pass valid email_id"
+            logger.error(error_message)
+            payload_errors.append(error_message)
+        # if jira_id is None or jira_id == '':
+        #     error_message = "Please pass valid jira_id"
+        #     logger.error(error_message)
+        #     payload_errors.append(error_message)
+        if cost_center is None or cost_center == '':
+            error_message = "Please pass valid cost_center"
+            logger.error(error_message)
+            payload_errors.append(error_message)
+        if cost_center_approver is None or cost_center_approver == '':
+            error_message = "Please pass valid cost_center_approver"
+            logger.error(error_message)
+            payload_errors.append(error_message)
+        if system_owner is None or system_owner == '':
+            error_message = "Please pass valid system_owner"
+            logger.error(error_message)
+            payload_errors.append(error_message)
+        if system_custodian is None or system_custodian == '':
+            error_message = "Please pass valid system_custodian"
+            logger.error(error_message)
+            payload_errors.append(error_message)
+        if primary_it_contact is None or primary_it_contact == '':
+            error_message = "Please pass valid primary_it_contact"
+            logger.error(error_message)
+            payload_errors.append(error_message)
+        if business_area is None or business_area == '':
+            error_message = "Please pass valid business_area"
+            logger.error(error_message)
+            payload_errors.append(error_message)
+        if project_center is None or project_center == '':
+            error_message = "Please pass valid project_center"
+            logger.error(error_message)
+            payload_errors.append(error_message)
+        if data_classification is None or data_classification == '':
+            error_message = "Please pass valid data_classification"
+            logger.error(error_message)
+            payload_errors.append(error_message)
+        if len(payload_errors) > 0:
+            raise PayloadError("Payload validation error: " +
+                               ', '.join(payload_errors))
+        tag_details = {
+            "FederatedRoleName": fed_role_name,
+            "SourceGitRepo": github_repo_name,
+            "CostCenter": cost_center,
+            "CostCenterApprover": cost_center_approver,
+            "SystemOwner": system_owner,
+            "SystemCustodian": system_custodian,
+            "PrimaryItContact": primary_it_contact,
+            "Level1BusinessArea": business_area,
+            "ProjectCenter": project_center,
+            "DataClassification": data_classification
+        }
+        return github_repo_name, github_user_name, email_id, tag_details
+    except PayloadError as pError:
+        raise pError
+    except Exception as error:
+        raise Exception(
+            "Exception occured in edb_core_onboarding_git_repository_creator ::\
+                 validate_payload :: {error}".format(error=str(error))) from error
+
+def create_snow_ticket(job_name: str, exception_message: str, arg_payload="") -> str:
+    """Creates snow ticket
+
+    Args:
+        job_name (str): Name of the Lambda function
+        exception_message (str): Error message
+    Returns:
+        str: snow incident number
+    """
+    logger.info("Entering create_snow_ticket()")
+    try:
+        payload = {
+            "AREA": "Job Failure",
+            "ASSIGNMENT_GROUP": "EDB-GLB",
+            "CATEGORY": "Software Support",
+            "CORRELATION_DISPLAY": "Software Support",
+            "FACILITY_CODE": "MC Lilly Corporate Center",
+            "IMPACT": "Medium",
+            "LOCATION": "MC Lilly Corporate Center",
+            "SUB_CATEGORY": "Application Support",
+            "URGENCY": "Medium",
+            "CONFIGURATION_ITEM": CONFIGURATION_ITEM,
+            "job_name": job_name,
+            "error_message": str(exception_message),
+        }
+        if arg_payload:
+            payload.update(arg_payload)
+        logger.info("snow lambda payload: %s", str(payload))
+        # Invoke SNOW lambda
+        client = boto3.client("lambda")
+        snow_lambda = "edb_inc_snow_integration"
+        response = client.invoke(
+            FunctionName=snow_lambda, Payload=json.dumps(payload))
+        if "FunctionError" in response:
+            raise Exception(
+                "Error in executing edb_inc_snow_integration lambda")
+        incident = json.loads(response["Payload"].read().decode("utf-8"))
+        if not incident:
+            logger.error(
+                "Error occurred while generating a SNOW ticket incident number"
+            )
+            raise Exception(
+                "Error occurred while generating a SNOW ticket incident number"
+            )
+        return incident
+    except Exception as error:
+        logger.error("Error occurred in create_snow_ticket()")
+        raise error
+    finally:
+        logger.info("Exiting create_snow_ticket()")
+
+def create_github_repo(github_repo_name):
+    """Function generates git repository
+
+    Args:
+        github_repo_name (String): Name of the github repository to be created
+    """
+    try:
+        logger.info("Creating github repo - %s", github_repo_name)
+        payload = '{"name": "' + github_repo_name + '", "private": true}'
+        logger.info("Payload: %s", payload)
+        create_repo_url = "/orgs/EliLillyCo/repos"
+        logger.info("url: %s", API_URL + create_repo_url)
+        response = requests.post(
+            API_URL + create_repo_url, data=payload, headers=HEADERS)
+        if response.status_code == 201:
+            logger.info("Response status code: %s", response.status_code)
+            logger.info("Response: %s", response.text)
+        elif response.status_code == 422:
+            logger.info("Response status code: %s", response.status_code)
+            logger.info("Response: %s", response.text)
+            raise Exception(response.json())
+        else:
+            logger.info("Response status code: %s", response.status_code)
+            logger.info("Response: %s", response.text)
+            raise Exception(response.json())
+        return response.json()
+    except Exception as error:
+        logger.error("Error occurred in create_github_repo()")
+        raise error
+    finally:
+        logger.info("Exiting create_github_repo()")
+
+def fill_git_repo(github_repo_name):
+    """Function generates git repository
+
+    Args:
+        github_repo_name (String): Name of the git repository to be created
+    """
+    try:
+        local_repo_path = "/tmp/"
+        os.chdir(local_repo_path)
+        os.system("mkdir " + github_repo_name)
+        os.chdir(local_repo_path + github_repo_name)
+        os.system("git init")
+        os.system("git remote add origin https://github.com/EliLillyCo/" +
+                  github_repo_name + ".git")
+        os.system("echo '#This " + github_repo_name +
+                  "is created for test automation purpose' >> README_TEST.md")
+        os.system(
+            "git add . && gir commit 'Initial automation commit' && git push origin master")
+        return local_repo_path
+    except Exception as error:
+        logger.error("Error occurred in fill_git_repo()")
+        raise error
+    finally:
+        logger.info("Exiting fill_git_repo()")
+
+def add_github_id_to_team(github_user_name, permission, github_repo_name):
+    """Function to get collaborators of git repository
+
+    Args:
+        github_repo_name (String): Name of the git repository to be created
+    """
+    try:
+        logger.info("Adding github user %s with %s permission to %s",
+                    github_user_name, permission, github_repo_name)
+        payload = '{"permission": "' + permission + '"}'
+        logger.info("Payload: %s", payload)
+        collaborator_url = "/repos/" + GIT_OWNER_NAME + "/" + \
+            github_repo_name + "/collaborators/" + github_user_name
+        logger.info("Request url: %s", (API_URL + collaborator_url))
+        response = requests.put(
+            API_URL + collaborator_url, data=payload, headers=HEADERS)
+        if response.status_code == 204:
+            logger.info("Response status code: %s", response.status_code)
+            logger.info("Github user %s got added to the Github repository %s with %s permission.",
+                        github_user_name, github_repo_name, permission)
+        else:
+            logger.info("Response status code: %s", response.status_code)
+            logger.info("Response: %s", response.json())
+            raise Exception(response.json())
+    except Exception as error:
+        logger.error("Error occurred in add_github_id_to_team()")
+        raise error
+    finally:
+        logger.info("Exiting add_github_id_to_team()")
+
+def copy_files_from_s3(github_repo_name):
+    """copy the updated files from s3 to lambda tmp location
+    Args:
+        github_repo_name (str): repository name
+    """
+    logger.info("Entering copy_files_from_s3()")
+    local_repo_path = "/tmp/" + github_repo_name
+    logger.info("local_repo_path: %s", local_repo_path)
+    try:
+        if os.path.isdir(local_repo_path + "/"):
+            shutil.rmtree(local_repo_path + "/")
+        repo_bucket = s3.Bucket(S3_GIT_INITIAL_FILES_BUCKET)
+        for obj in repo_bucket.objects.filter(
+            Prefix=S3_GIT_INITIAL_FILES_FOLDER + "/" + S3_GIT_REPO_CONTENT_FOLDER + "/"
+        ):
+            key = obj.key.lstrip(S3_GIT_INITIAL_FILES_FOLDER +
+                                 "/").lstrip(S3_GIT_REPO_CONTENT_FOLDER)
+            local_file_name = "/tmp/" + key
+            logger.info("local file name: %s", local_file_name)
+            if not os.path.exists(os.path.dirname(local_file_name)):
+                os.makedirs(os.path.dirname(local_file_name))
+            s3.Bucket(S3_GIT_INITIAL_FILES_BUCKET).download_file(
+                obj.key, local_file_name)
+    except Exception as err:
+        logger.info("Error occured in copy_files_from_s3()")
+        raise err
+    finally:
+        logger.info("Exiting copy_files_from_s3()")
+
+def update_param_in_repo(form_details, local_path):
+    """git clone to s3 location
+    Args:
+        git_url (str): git url to clone the repo from
+        form_details: form details in json passed from UI via post request
+        local_path (str): local directory path to clone the file to
+        repo_nm (str): repository name
+    """
+    try:
+        logger.info("entering update_param_in_repo()")
+
+        with open(local_path + "/params.dev.json","r", encoding='UTF-8') as f1:
+            params_json = json.load(f1)
+
+        params_json["Parameters"]["FederatedRoleName"] = form_details["FederatedRoleName"]
+        # params_json["Parameters"]["DeployEnvironment"] = form_details["DeployEnvironment"]
+        # params_json["Tags"]["DeployEnvironment"] = form_details["DeployEnvironment"]
+        # params_json["Tags"]["AppName"] = form_details["AppName"]
+        params_json["Tags"]["CostCenter"] = form_details["CostCenter"]
+        params_json["Tags"]["CostCenterApprover"] = form_details["CostCenterApprover"]
+        params_json["Tags"]["SystemOwner"] = form_details["SystemOwner"]
+        params_json["Tags"]["SystemCustodian"] = form_details["SystemCustodian"]
+        params_json["Tags"]["PrimaryItContact"] = form_details["PrimaryItContact"]
+        params_json["Tags"]["Level1BusinessArea"] = form_details["Level1BusinessArea"]
+        params_json["Tags"]["ProjectCenter"] = form_details["ProjectCenter"]
+        params_json["Tags"]["DataClassification"] = form_details["DataClassification"]
+        # params_json["Tags"]["Hipaa"] = form_details["Hipaa"]
+        # params_json["Tags"]["ApplicationCi"] = form_details["ApplicationCi"]
+        params_json["Tags"]["SourceGitRepo"] = form_details["SourceGitRepo"]
+        # params_json["Tags"]["ApproverGroup"] = form_details["ApproverGroup"]
+
+        # print(params_json)
+
+        with open(local_path + "/params.dev.json","w", encoding='UTF-8') as f2:
+            f2.write(json.dumps(params_json, indent=4))
+
+    except Exception as error:
+        logger.error("Error occurred in update_param_in_repo()\n")
+        logger.info(str(error))
+        raise error
+    finally:
+        logger.info("Exiting update_param_in_repo()")
+
+def push_remote_branch(remote_url, head_branch, github_repo_name, tag_details):
+    """push files to git remote branch
+    Args:
+        remote_url (str): repository url
+        head_branch (str): repo branch name
+        github_repo_name (str): repository name
+    """
+    logger.info("Entering push_remote_branch()")
+    try:
+        local_repo_path = "/tmp/"
+        logger.info("Cloning remote repo: %s", github_repo_name)
+        repo_branch = git.Repo.clone_from(remote_url, local_repo_path)
+        copy_files_from_s3(github_repo_name)
+        update_param_in_repo(tag_details, local_repo_path)
+        repo_branch.config_writer().set_value('core', 'fileMode', 'false').release()
+        logger.info("Creating new branch - %s", head_branch)
+        repo_branch.git.checkout('-b', head_branch)
+        repo_branch.git.add(all=True)
+        repo_branch.index.commit("Initial Automated Commit")
+        remote = repo_branch.create_remote(head_branch, url=remote_url)
+        remote.push(head_branch)
+        logger.info("Pushed %s branch to remote", head_branch)
+    except Exception as error:
+        logger.info("Error occured in push_remote_branch()")
+        raise error
+    finally:
+        logger.info("Exiting push_remote_branch()")
+
+def sendEmail(email_id, user_name, repo_name):
+    """Sends an email to email_id regarding the
+    Github repo details and future steps
+    Args:
+        email_id : Primary Email ID
+        user_name : Github user name
+        repo_name : Github repository name
+    """
+    logger.info("Entering sendEmail()")
+    try:
+        # table_data = pd.concat([data_df]).rename(columns=COLUMN_DICT_NL)
+        # table_html = table_data.to_html(index=False,justify='left')
+        to_address = email_id #TO_ADDRESS
+        subject = f"Git repository {repo_name} was created"
+        charset = "UTF-8"
+        body = f"<html><body>Hi {user_name},<br/><br/>" \
+                 f"Requested Git repository <b>{repo_name}</b> has been successfully created " \
+                 f"with dev branch containing the federated IAM role details.<br/><br/>" \
+                 f"Steps to follow for Development Kickoff:<br/>" \
+                 f"<ol><li>Update the managed policy of the federated IAM Role to cater feautre specific AWS resources</li>" \
+                 f"<li>Update the parameter files present in the repo with relevant tag details based on " \
+                 f"the functional group you belong to before the pipeline creation</li>" \
+                 f"<li>Raise the request for CA Account creation</li>" \
+                 f"<li>Go to Demand Details page and request for pipeline creation</li>" \
+                 f"<li>Execute the pipeline for the creation of Federated IAM role</li>" \
+                 f"<li>Go to Demand Details page and request for AD Group creation</li></ol><br/><br/>" \
+                 f"Please make sure that the steps are followed in the same order. Below are some useful " \
+                 f"links for the above mentioned steps:<br/><br/>" \
+                 f"CI/CD Pipeline Creation: " \
+                 f"<a href='https://dot-confluence.lilly.com/pages/viewpage.action?pageId=59883766'>" \
+                 f"Deployment Pipeline Setup & Config (API's)</a><br>" \
+                 f"Lilly Dev Page For CA Account Creation: " \
+                 f"<a href='https://lillydev.com/aws/aws%20overview#aws-access-management'>" \
+                 f"CA Account Creation</a><br><br>" \
+                 "Thank You,<br/>" \
+                 "EDP Team</body></html>"
+
+        response = ses_client.send_email(
+                            Destination={
+                                'ToAddresses': [to_address]
+                            },
+                            Message={
+                                'Body': {
+                                    'Html': {
+                                        'Charset': f'{charset}',
+                                        'Data': f'{body}'
+                                    },
+                                },
+                                'Subject': {
+                                    'Charset': f'{charset}',
+                                    'Data': f'{subject}'
+                                },
+                            },
+                            Source=f'{FROM_ADDRESS}',
+                            SourceArn= f'{SOURCE_ARN}'
+                        )
+        # print(response)
+        logger.info("Mail Sent to %s",email_id)
+    except Exception as error:
+        logger.error("Handling the e-mail notification in sendEmail()")
+        if type(error).__name__ in ["ClientError"]:
+            error.args = ("Notification Email ID out of Lilly Domain" ,) + error.args
+            raise error
+        raise error
+    finally:
+        logger.info("Exiting sendEmail()")
+
+def lambda_handler(event, context):
+    """
+    Main processing to get config details and invoke git requests
+    Parameters:
+        event - object passed by a put event.
+        context - When lambda runs, it passes a context object to the handler
+    """
+    try:
+        response = {}
+        logger.info("Entered handler method")
+        logger.info("Input received :: event : %s", event)
+        details = json.loads(event['body'])
+        logger.info(details)
+        github_repo_name, github_user_name, email_id, tag_details = validate_payload(details)
+        logger.info("github_repo_name: %s, github_user_name: %s",
+                    github_repo_name, github_user_name)
+
+        # Create github repository
+        create_github_repo_response = create_github_repo(github_repo_name)
+        response["create_github_repo_response"] = create_github_repo_response
+
+        # Add github username to the repo as admin
+        permission = "admin"
+        add_github_id_to_team(github_user_name, permission, github_repo_name)
+
+        # Create develop branch and commit the files
+        remote_url = (
+            "https://"
+            + GIT_OWNER_NAME
+            + ":"
+            + GIT_TOKEN
+            + "@github.com"
+            + "/"
+            + GIT_OWNER_NAME
+            + "/"
+            + github_repo_name
+            + ".git"
+        )
+        branch_name = "develop"
+        push_remote_branch(remote_url, branch_name, github_repo_name, tag_details)
+        sendEmail(email_id, github_user_name, github_repo_name)
+
+        lambda_client = boto3.client("lambda")
+        jira_id = details.get("jira_id")
+        if jira_id:
+            if "https:" not in jira_id:
+                label_update_lambda = "edb_core_onboarding_update_jira_label"
+                payload = { "jira_id":jira_id, "label_name":"GitRepoCreated" }
+                label_response = lambda_client.invoke(FunctionName=label_update_lambda, Payload=json.dumps(payload))
+                status = json.loads(label_response["Payload"].read().decode('utf-8'))
+                logger.info(status)
+            else:
+                logger.info("Jira story ID not passed")
+        else:
+            logger.info("Jira story ID not passed")
+
+        statusCode = 200
+        responseBody = {"statusCode":statusCode,"message":"Github Repo named '"+github_repo_name+"' was created successfully"}
+        logger.info("Response")
+        logger.info(response)
+        return {
+            "statusCode": statusCode,
+            "headers": {
+                "Content-Type" : "application/json",
+                "Access-Control-Allow-Headers" : "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
+                "Access-Control-Allow-Methods" : "OPTIONS,POST,GET",
+                "Access-Control-Allow-Credentials" : True,
+                "Access-Control-Allow-Origin" : "*",
+                "X-Requested-With" : "*"
+            },
+            "body": json.dumps(responseBody,indent=4),
+            "isBase64Encoded": False
+        }
+    except PayloadError as error:
+        raise error
+    except Exception as error:
+        statusCode = 400
+        logger.error(
+            "Exception occurred in the handler :: %s", str(error))
+        try:
+            er_msg = "Failed to create the github ."
+            try:
+                er_msg += str(error)
+            except Exception as msg_err:
+                logger.info(str(msg_err))
+                logger.info("Not valid request")
+            if "already exists" not in er_msg:
+                incident = "DUMMY"
+                # incident = create_snow_ticket(
+                #     "edb_automation_onboarding",
+                #     error,
+                #     SNOW_REQUEST_PAYLOAD)
+                # error.args = ("SnowTicket-" + incident,) + error.args
+                er_msg += "\nSnowTicket-" + str(incident)
+        except Exception as snow_error:
+            error_message = "Error occurred in generating a SNOW ticket incident number" + str(snow_error)
+            logger.error(error_message)
+            error.args = (
+                snow_error.args[0],
+                error_message,
+            ) + error.args
+            responseBody = {"statusCode":statusCode,"message":error_message}
+            return {
+                "statusCode": statusCode,
+                "headers": {
+                    "Content-Type" : "application/json",
+                    "Access-Control-Allow-Headers" : "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
+                    "Access-Control-Allow-Methods" : "OPTIONS,POST",
+                    "Access-Control-Allow-Credentials" : True,
+                    "Access-Control-Allow-Origin" : "*",
+                    "X-Requested-With" : "*"
+                },
+                "body": json.dumps(responseBody,indent=4),
+                "isBase64Encoded": False
+            }
+        # error.args = ("SnowTicket-" + incident,) + error.args
+        responseBody = {"statusCode":statusCode,"message":er_msg}
+        return {
+            "statusCode": statusCode,
+            "headers": {
+                "Content-Type" : "application/json",
+                "Access-Control-Allow-Headers" : "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
+                "Access-Control-Allow-Methods" : "OPTIONS,POST",
+                "Access-Control-Allow-Credentials" : True,
+                "Access-Control-Allow-Origin" : "*",
+                "X-Requested-With" : "*"
+            },
+            "body": json.dumps(responseBody,indent=4),
+            "isBase64Encoded": False
+        }
+    finally:
+        logger.info("Exiting executor handler method")

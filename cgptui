@@ -319,3 +319,34 @@ const sendPostRequest = () => {
 </Box>
 
 
+//updated header in axios
+const sendPostRequest = () => {
+  axios
+    .post(
+      "https://6rzzjwudya.execute-api.us-east-1.amazonaws.com/DEV/lexbot",
+      { Ques: input }
+    )
+    .then((response) => {
+      const contentType = response.headers["content-type"];
+      if (contentType && contentType.indexOf("application/json") !== -1) {
+        const parsedResponse = response.data;
+        setMessageHistory([
+          ...messageHistory,
+          { Ques: input, response: parsedResponse },
+        ]);
+        setInput(""); // Clear input after sending message
+      } else {
+        const faqResponse = response.data;
+        setMessageHistory([
+          ...messageHistory,
+          { Ques: input, faqResponse },
+        ]);
+        setInput(""); // Clear input after sending message
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+};
+
+

@@ -10,6 +10,7 @@ import {
   // Button,
   TextField,
   Typography,
+  Link,
 } from "@mui/material";
 import { Send } from "@mui/icons-material";
 import RefreshIcon from "@mui/icons-material/Refresh";
@@ -39,12 +40,20 @@ const Chatbot = () => {
         { Ques: input }
       )
       .then((response) => {
+        const faqResponse = response.data;
+        const parsedResponse = JSON.parse(
+          response.data.replace(/'/g, '"').split("\n")[1]
+        );
         setMessageHistory([
           ...messageHistory,
-          { Ques: input, response: response.data },
+          { Ques: input, response: parsedResponse },
         ]);
         setInput(""); // Clear input after sending message
-        console.log(messageHistory);
+
+        console.log(parsedResponse.Link);
+        console.log(parsedResponse.Summary);
+        // console.log(parsedResponse.Header);
+        // console.log(parsedResponse.Title);
       })
       .catch((error) => {
         console.error(error);
@@ -66,24 +75,30 @@ const Chatbot = () => {
         container
         height="100vh"
         bgcolor="#dce1fe"
+        // bgcolor="maroon"
         // f6f8ff
         padding="1rem"
         justifyContent="flex-end"
         alignItems="flex-end"
       >
-        <Box width="25rem">
-          <Paper elevation={8}>
-            <Typography color="white" fontSize="h6" fontWeight="bold">
-              <Box
-                sx={{
-                  bgcolor: "red",
-                  padding: "1rem",
-                  // marginTop: "1rem",
-                }}
+        <Paper elevation={8}>
+          <Box width="25rem">
+            <Box
+              sx={{
+                bgcolor: "red",
+                padding: "0.5rem",
+                // marginTop: "1rem",
+              }}
+            >
+              <Typography
+                color="white"
+                fontWeight="bold"
+                variant="h6"
+                component="span"
               >
-                Lilly bot
-              </Box>
-            </Typography>
+                LILLY
+              </Typography>
+            </Box>
 
             <Box
               sx={{
@@ -91,31 +106,55 @@ const Chatbot = () => {
                 height: "200px",
                 overflow: "hidden",
                 overflowY: "scroll",
+                background: "Azure",
               }}
             >
-              {messageHistory.map((message, index) => (
-                <Box
-                  key={index}
-                  style={
-                    {
-                      // display: "flex",
-                      // direction: "column",
-                      // overflow: "hidden",
-                      // overflowY: "scroll",
-                      // height: "200px",
-                    }
-                  }
-                >
-                  <p sx={{ color: "green" }}>{message.Ques}</p>
-                  <p sx={{ color: "red" }}>{message.response}</p>
-                </Box>
-              ))}
+              {messageHistory.map((message, index) =>
+                message.parsedResponse ? (
+                  <Box key={index}>
+                    <Typography
+                      color="blue"
+                      align="right"
+                      fontSize="1rem"
+                      fontFamily="comic sans ms"
+                    >
+                      <p>{message.Ques}</p>
+                    </Typography>
+                    <Typography
+                      color="maroon"
+                      fontSize="1rem"
+                      fontFamily="comic sans ms"
+                      style={{ lineBreak: "anywhere" }}
+                    >
+                      <p>{message.response.Summary}</p>
+                    </Typography>
+                    <Typography
+                      fontSize="1rem"
+                      fontFamily="comic sans ms"
+                      style={{ lineBreak: "anywhere" }}
+                    >
+                      <Link
+                        href={message.response.Link}
+                        underline="hover"
+                        rel="noopener noreferrer"
+                        target="_blank"
+                      >
+                        {message.response.Link}
+                      </Link>
+                    </Typography>
+                  </Box>
+                ) : (
+                  <p>{message.faqResponse}</p>
+                )
+              )}
+              //update faqresponse
             </Box>
 
             <Box
               sx={{
                 flexGrow: 1,
                 padding: "1rem",
+                background: "Azure",
               }}
             >
               <Grid container justifyContent="flex-end">
@@ -127,6 +166,7 @@ const Chatbot = () => {
                   autoComplete="false"
                   onChange={handleInputChange}
                   onKeyDown={handleAnswerChange}
+                  sx={{ background: "white" }}
                 />
                 {/* <Button
                   sx={{ marginLeft: "1rem" }}
@@ -136,12 +176,11 @@ const Chatbot = () => {
                   size="large"
                 > */}
                 <RefreshIcon
-                  color="primary"
                   fontSize="large"
                   onClick={handleClear}
                   sx={{
                     marginX: "1rem",
-                    marginY: "0.2rem",
+                    marginY: "0.5rem",
                     cursor: "pointer",
                     color: "red",
                   }}
@@ -150,8 +189,8 @@ const Chatbot = () => {
                   onClick={sendPostRequest}
                   fontSize="large"
                   sx={{
-                    marginX: "1rem",
-                    marginY: "0.2rem",
+                    // marginX: "1rem",
+                    marginY: "0.5rem",
                     cursor: "pointer",
                     color: "red",
                   }}
@@ -167,8 +206,8 @@ const Chatbot = () => {
                 {/* </Button> */}
               </Grid>
             </Box>
-          </Paper>
-        </Box>
+          </Box>
+        </Paper>
       </Grid>
     </Container>
   );
@@ -177,4 +216,5 @@ const Chatbot = () => {
 export default Chatbot;
 
 // "https://6rzzjwudya.execute-api.us-east-1.amazonaws.com/DEV/lexbot",
+
 

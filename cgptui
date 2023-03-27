@@ -218,3 +218,104 @@ export default Chatbot;
 // "https://6rzzjwudya.execute-api.us-east-1.amazonaws.com/DEV/lexbot",
 
 
+
+const sendPostRequest = () => {
+    axios
+      .post(
+        "https://6rzzjwudya.execute-api.us-east-1.amazonaws.com/DEV/lexbot",
+        { Ques: input }
+      )
+      .then((response) => {
+        const faqResponse = response.data;
+        const parsedResponse = JSON.parse(
+          response.data.replace(/'/g, '"').split("\n")[1]
+        );
+
+        if (parsedResponse.Link) {
+          setMessageHistory([
+            ...messageHistory,
+            {
+              Ques: input,
+              response: { Summary: parsedResponse.Summary, Link: parsedResponse.Link },
+              parsedResponse: true,
+            },
+          ]);
+        } else {
+          setMessageHistory([
+            ...messageHistory,
+            {
+              Ques: input,
+              response: faqResponse,
+              parsedResponse: false,
+            },
+          ]);
+        }
+        setInput(""); // Clear input after sending message
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
+
+
+////return
+
+
+<Box
+  sx={{
+    padding: "1rem",
+    height: "200px",
+    overflow: "hidden",
+    overflowY: "scroll",
+    background: "Azure",
+  }}
+>
+  {messageHistory.map((message, index) =>
+    message.parsedResponse ? (
+      <Box key={index}>
+        <Typography
+          color="blue"
+          align="right"
+          fontSize="1rem"
+          fontFamily="comic sans ms"
+        >
+          <p>{message.Ques}</p>
+        </Typography>
+        <Typography
+          color="maroon"
+          fontSize="1rem"
+          fontFamily="comic sans ms"
+          style={{ lineBreak: "anywhere" }}
+        >
+          <p>{message.response.Summary}</p>
+        </Typography>
+        <Typography
+          fontSize="1rem"
+          fontFamily="comic sans ms"
+          style={{ lineBreak: "anywhere" }}
+        >
+          <Link
+            href={message.response.Link}
+            underline="hover"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            {message.response.Link}
+          </Link>
+        </Typography>
+      </Box>
+    ) : (
+      <Typography
+        key={index}
+        color="blue"
+        align="right"
+        fontSize="1rem"
+        fontFamily="comic sans ms"
+      >
+        <p>{message.response}</p>
+      </Typography>
+    )
+  )}
+</Box>
+
+

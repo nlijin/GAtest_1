@@ -147,7 +147,7 @@ const Chatbot = () => {
                   <p>{message.faqResponse}</p>
                 )
               )}
-              //update faqresponse
+
             </Box>
 
             <Box

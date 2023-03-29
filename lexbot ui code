@@ -247,3 +247,36 @@ const Chatbot = () => {
 export default Chatbot;
 
 // "https://6rzzjwudya.execute-api.us-east-1.amazonaws.com/DEV/lexbot",
+
+//use async await option for post function
+
+const sendPostRequest = async () => {
+  try {
+    const response = await axios.post(
+      "https://6rzzjwudya.execute-api.us-east-1.amazonaws.com/DEV/lexbot",
+      { Ques: input }
+    );
+
+    let parsedResponse = "";
+    if (response.data.includes("Link")) {
+      parsedResponse = JSON.parse(
+        response.data.replace(/'/g, '"').split("\n")[1]
+      );
+    } else if (response.data) {
+      parsedResponse = response.data;
+    } else if (response.data.errorType === "KeyError") {
+      parsedResponse = "no documents found related to this";
+    } else {
+      parsedResponse = "there are no particular files related to this";
+    }
+
+    setMessageHistory([
+      ...messageHistory,
+      { Ques: input, response: parsedResponse },
+    ]);
+    setInput(""); // Clear input after sending message
+  } catch (error) {
+    console.error(error);
+  }
+};
+

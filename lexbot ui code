@@ -255,3 +255,152 @@ const Chatbot = () => {
 };
 
 export default Chatbot;
+
+
+//only return code with minimize functionality added
+
+return (
+  <Container
+    maxWidth="lg"
+    sx={{
+      bgcolor: "whitesmoke",
+      height: "100vh",
+    }}
+  >
+    <Grid
+      container
+      height={isMinimized ? "2.5rem" : "100vh"}
+      bgcolor="#dce1fe"
+      padding="1rem"
+      justifyContent="flex-end"
+      alignItems="flex-end"
+    >
+      <Paper elevation={8}>
+        <Box width="25rem">
+          <Box
+            sx={{
+              bgcolor: "red",
+              paddingX: "1rem",
+              paddingY: "1rem",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Typography
+              color="white"
+              fontWeight="bold"
+              variant="h6"
+              component="span"
+            >
+              Lilly
+            </Typography>
+            <div>
+              {isMinimized ? (
+                <RestoreIcon onClick={toggleMinimized} />
+              ) : (
+                <>
+                  <MinimizeIcon onClick={toggleMinimized} />
+                  <RefreshIcon onClick={handleClear} />
+                </>
+              )}
+            </div>
+          </Box>
+
+          {!isMinimized && (
+            <Box
+              sx={{
+                padding: "1rem",
+                height: "200px",
+                overflow: "hidden",
+                overflowY: "scroll",
+                background: "Azure",
+              }}
+            >
+              {messageHistory.map((message, index) =>
+                message.response.Link ? (
+                  <Box key={index}>
+                    <Typography
+                      color="blue"
+                      align="right"
+                      fontSize="1rem"
+                      fontFamily="Calibri"
+                    >
+                      <p>{message.Ques}</p>
+                    </Typography>
+
+                    <Typography
+                      color="maroon"
+                      fontSize="1rem"
+                      fontFamily="Calibri"
+                      style={{ lineBreak: "anywhere" }}
+                    >
+                      <p>{message.response.Summary}</p>
+                    </Typography>
+                    <Typography
+                      fontSize="1rem"
+                      fontFamily="Calibri"
+                      style={{ lineBreak: "anywhere" }}
+                    >
+                      <Link
+                        href={message.response.Link}
+                        underline="hover"
+                        rel="noopener noreferrer"
+                        target="_blank"
+                      >
+                        {message.response.Link}
+                      </Link>
+                    </Typography>
+                  </Box>
+                ) : (
+                  <Box key={index}>
+                    <Typography
+                      color="blue"
+                      align="right"
+                      fontSize="1rem"
+                      fontFamily="Calibri"
+                    >
+                      <p>{message.Ques}</p>
+                    </Typography>
+
+                    <Typography
+                      color="maroon"
+                      fontSize="1rem"
+                      fontFamily="Calibri"
+                      style={{ lineBreak: "anywhere" }}
+                    >
+                      <p>{message.response}</p>
+                    </Typography>
+                  </Box>
+                )
+              )}
+            </Box>
+          )}
+
+          {!isMinimized && (
+            <Box
+              sx={{
+                flexGrow: 1,
+                padding: "1rem",
+                background: "Azure",
+              }}
+            >
+              <Grid container justifyContent="flex-end">
+                <TextField
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  value={input}
+                  autoComplete="false"
+                  onChange={handleInputChange}
+                  onKeyDown={handleAnswerChange}
+                  sx={{ background: "white" }}
+                />
+                <Send onClick={sendPostRequest} color="action" />
+                {/* <CircularProgress /> */}
+              </Grid>
+            </Box>
+          )}
+        </Box>
+      </Paper>
+    </Grid>

@@ -238,3 +238,13 @@ const Chatbot = () => {
 
 export default Chatbot;
 
+//catch error handling
+catch (error) {
+  console.error(error);
+  setMessageHistory([
+    ...messageHistory,
+    { Ques: input, response: `Error: ${error.message}` },
+  ]);
+  setInput(""); // Clear input after sending message
+}
+

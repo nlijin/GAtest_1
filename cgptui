@@ -319,15 +319,40 @@ const sendPostRequest = () => {
 </Box>
 
 
+const sendPostRequest = async () => {
+  try {
+    const response = await axios.post(
+      "https://6rzzjwudya.execute-api.us-east-1.amazonaws.com/DEV/lexbot",
+      { Ques: input }
+    );
 
-response 1: 
-"Please find the result for the query below\n{'Link': 'https://lilly-confluence.atlassian.net/wiki/spaces/EDB/pages/904005069/Code+Testing', 'Page Title': 'Code Testing', 'Summary': 'Now we are going to now move onto with \"Code Testing\", focusing on: 1.     Code Testing for Node using jest. 2.     Code Testing for Python using pytest.Step 3 - Let\\'s get testing ..Python is a little bit more simple then Node when it comes to testing  it follows a similar process and flow to the node testing above.'}"
+    let parsedResponse = "";
+    const responseString = response.data.trim();
+    if (responseString.startsWith("Please find the result for the query below")) {
+      const jsonString = responseString.split("\n")[1].replace(/'/g, '"');
+      try {
+        parsedResponse = JSON.parse(jsonString);
+      } catch {
+        parsedResponse = jsonString;
+      }
+    } else {
+      parsedResponse = responseString;
+    }
 
-response 2:
-"Please find the result for the query below\n{'Link': 'https://lilly-confluence.atlassian.net/wiki/spaces/EDB/pages/904006641/Data+Ingestion', 'Page Title': 'Data Ingestion', 'Summary': 'LIVE  HEADER:Table of Contents   Data Ingestion#Introduction Common Features Process Flow Data Ingestion#Patterns    HEADER:1.network level security to restrict data flow  ServiceNow Integration for raising incidents on any failure during the data flowCustomer can configure incident level for their data setIntegration with ABCfor raising incidents on any failure during the data flowCustomer can configure incident level for their data setIntegration with ABC Framework to track the data flow status for operational monitoring'}"
-
-response 3:
-"You can login using the link https://aws-login.am.lilly.com/awsauth/awslogin.php and selecting your CA id , the AWS account along with the corresponding role.Please make sure you have completed all the pre-requisites steps as per the on boarding deck."
-
-response 4:
-"Please find the result for the query below\n{'Link': 'https://lilly-confluence.atlassian.net/wiki/spaces/EDB/pages/904005069/Code+Testing', 'Page Title': 'Code Testing', 'Summary': 'Now we are going to now move onto with \"Code Testing\", focusing on: 1.     Code Testing for Node using jest. 2.     Code Testing for Python using pytest.Step 3 - Let\\'s get testing ..Python is a little bit more simple then Node when it comes to testing  it follows a similar process and flow to the node testing above.'}"
+    setMessageHistory([
+      ...messageHistory,
+      { Ques: input, response: parsedResponse },
+    ]);
+    setInput(""); // Clear input after sending message
+  } catch (error) {
+    console.error(error);
+    setMessageHistory([
+      ...messageHistory,
+      {
+        Ques: input,
+        response: `Error: ${"there are no particular files related to this"}`,
+      },
+    ]);
+    setInput(""); // Clear input after sending message
+  }
+};

@@ -355,3 +355,38 @@ const sendPostRequest = async () => {
 
 
 Chatbot.js:63 SyntaxError: Expected property name or '}' in JSON at position 1
+
+
+const sendPostRequest = async () => {
+  try {
+    const response = await axios.post(
+      "https://6rzzjwudya.execute-api.us-east-1.amazonaws.com/DEV/lexbot",
+      { Ques: input }
+    );
+
+    let parsedResponse = "";
+    const responseString = response.data.replace(/'/g, '"'); // replace single quotes with double quotes
+    if (responseString.includes('"Link":')) {
+      parsedResponse = JSON.parse(responseString.split("\n")[1]);
+    } else {
+      parsedResponse = responseString;
+    }
+
+    setMessageHistory([
+      ...messageHistory,
+      { Ques: input, response: parsedResponse },
+    ]);
+    setInput(""); // Clear input after sending message
+  } catch (error) {
+    console.error(error);
+    setMessageHistory([
+      ...messageHistory,
+      {
+        Ques: input,
+        response: `Error: ${"there are no particular files related to this"}`,
+      },
+    ]);
+    setInput(""); // Clear input after sending message
+  }
+};
+

@@ -468,7 +468,12 @@ const sendPostRequest = async () => {
     if (contentType === "application/json") {
       const jsonString = response.data.match(/\{(.|\n)*\}/);
       if (jsonString) {
-        parsedResponse = JSON.parse(jsonString[0]);
+        try {
+          parsedResponse = JSON.parse(jsonString[0]);
+        } catch (e) {
+          console.error(e);
+          parsedResponse = response.data;
+        }
       }
     } else {
       const stringResponse = response.data.replace(/\n.*$/, '');

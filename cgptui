@@ -352,3 +352,6 @@ const sendPostRequest = async () => {
     setInput(""); // Clear input after sending message
   }
 };
+
+
+Chatbot.js:63 SyntaxError: Expected property name or '}' in JSON at position 1

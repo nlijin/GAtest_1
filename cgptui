@@ -499,3 +499,23 @@ const sendPostRequest = async () => {
   setInput(""); // Clear input after sending message
 };
 
+
+
+
+
+
+regex//
+
+const response = "Please find the result for the query below\n{'Link': 'https://lilly-confluence.atlassian.net/wiki/spaces/EDB/pages/904005069/Code+Testing', 'Page Title': 'Code Testing', 'Summary': 'Now we are going to now move onto with \"Code Testing\", focusing on: 1.     Code Testing for Node using jest. 2.     Code Testing for Python using pytest.Step 3 - Let\\'s get testing ..Python is a little bit more simple then Node when it comes to testing  it follows a similar process and flow to the node testing above.'}";
+
+let parsedResponse = response;
+const jsonString = response.match(/\{(.|\n)*\}/);
+if (jsonString) {
+  try {
+    parsedResponse = JSON.parse(jsonString[0]);
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+console.log(parsedResponse); // Will output the parsed JSON object if present or the original string response

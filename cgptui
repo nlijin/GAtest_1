@@ -423,4 +423,33 @@ const sendPostRequest = async () => {
   setInput(""); // Clear input after sending message
 };
 
+//handle non json as well
+const sendPostRequest = async () => {
+  try {
+    const response = await axios.post(
+      "https://6rzzjwudya.execute-api.us-east-1.amazonaws.com/DEV/lexbot",
+      { Ques: input }
+    );
+
+    let parsedResponse = response.data;
+    if (response.headers["content-type"] === "application/json") {
+      parsedResponse = JSON.parse(response.data.replace(/'/g, '"').split("\n")[1] || response.data);
+    }
+
+    setMessageHistory([
+      ...messageHistory,
+      { Ques: input, response: parsedResponse },
+    ]);
+  } catch (error) {
+    console.error(error);
+    setMessageHistory([
+      ...messageHistory,
+      {
+        Ques: input,
+        response: `Error: ${"there are no particular files related to this"}`,
+      },
+    ]);
+  }
+  setInput(""); // Clear input after sending message
+};
 

@@ -395,3 +395,32 @@ response 2:
 response 3:
 "You can login using the link https://aws-login.am.lilly.com/awsauth/awslogin.php and selecting your CA id , the AWS account along with the corresponding role.Please make sure you have completed all the pre-requisites steps as per the on boarding deck."
 
+
+//chatgpt response
+const sendPostRequest = async () => {
+  try {
+    const response = await axios.post(
+      "https://6rzzjwudya.execute-api.us-east-1.amazonaws.com/DEV/lexbot",
+      { Ques: input }
+    );
+
+    const parsedResponse = JSON.parse(response.data.replace(/'/g, '"').split("\n")[1] || response.data);
+
+    setMessageHistory([
+      ...messageHistory,
+      { Ques: input, response: parsedResponse },
+    ]);
+  } catch (error) {
+    console.error(error);
+    setMessageHistory([
+      ...messageHistory,
+      {
+        Ques: input,
+        response: `Error: ${"there are no particular files related to this"}`,
+      },
+    ]);
+  }
+  setInput(""); // Clear input after sending message
+};
+
+

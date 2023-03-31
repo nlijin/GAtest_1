@@ -453,3 +453,44 @@ const sendPostRequest = async () => {
   setInput(""); // Clear input after sending message
 };
 
+
+//regex for axios response
+const sendPostRequest = async () => {
+  try {
+    const response = await axios.post(
+      "https://6rzzjwudya.execute-api.us-east-1.amazonaws.com/DEV/lexbot",
+      { Ques: input }
+    );
+
+    let parsedResponse = response.data;
+    const contentType = response.headers["content-type"];
+
+    if (contentType === "application/json") {
+      const jsonString = response.data.match(/\{(.|\n)*\}/);
+      if (jsonString) {
+        parsedResponse = JSON.parse(jsonString[0]);
+      }
+    } else {
+      const stringResponse = response.data.replace(/\n.*$/, '');
+      if (stringResponse !== response.data) {
+        parsedResponse = stringResponse;
+      }
+    }
+
+    setMessageHistory([
+      ...messageHistory,
+      { Ques: input, response: parsedResponse },
+    ]);
+  } catch (error) {
+    console.error(error);
+    setMessageHistory([
+      ...messageHistory,
+      {
+        Ques: input,
+        response: `Error: ${"there are no particular files related to this"}`,
+      },
+    ]);
+  }
+  setInput(""); // Clear input after sending message
+};
+

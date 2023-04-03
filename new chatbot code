@@ -481,3 +481,23 @@ const ContactInformation = ({ name, phone, email }) => {
 };
 
 export default ContactInformation;
+
+import { Typography, Box, Link, Divider } from '@mui/material';
+
+const ContactInfo = ({ name, email, phone }) => {
+  return (
+    <Box>
+      <Typography variant="h6">{name}</Typography>
+      <Divider />
+      <Typography variant="body1">
+        Email: <Link href={`mailto:${email}`}>{email}</Link>
+      </Typography>
+      <Typography variant="body1">
+        Phone: <Link href={`tel:${phone}`}>{phone}</Link>
+      </Typography>
+    </Box>
+  );
+};
+
+export default ContactInfo;
+

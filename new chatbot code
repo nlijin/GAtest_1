@@ -287,3 +287,133 @@ const Chatbot = () => {
 export default Chatbot;
 
 // "https://6rzzjwudya.execute-api.us-east-1.amazonaws.com/DEV/lexbot",
+
+
+
+//scroll effect
+import React, { useState, useRef, useEffect } from "react";
+import axios from "axios";
+import {
+  Box,
+  Button,
+  Grid,
+  Link,
+  Paper,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { Send } from "@mui/icons-material";
+import RefreshIcon from "@mui/icons-material/Refresh";
+import MinimizeIcon from "@mui/icons-material/Minimize";
+import AddIcon from "@mui/icons-material/Add";
+
+const Chatbot = () => {
+  const [input, setInput] = useState("");
+  const [messageHistory, setMessageHistory] = useState([]);
+  const [isMinimized, setIsMinimized] = useState(false);
+  const chatEndRef = useRef(null);
+
+  const handleInputChange = (event) => {
+    setInput(event.target.value);
+  };
+
+  const handleAnswerChange = (e) => {
+    if (e.code === "Enter") {
+      sendPostRequest();
+    }
+  };
+
+  const handleClear = (event) => {
+    setMessageHistory([]);
+  };
+
+  const toggleMinimized = () => {
+    setIsMinimized(!isMinimized);
+  };
+
+  const scrollToBottom = () => {
+    chatEndRef.current.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messageHistory]);
+
+  const sendPostRequest = async () => {
+    try {
+      const response = await axios.post(
+        "https://6rzzjwudya.execute-api.us-east-1.amazonaws.com/DEV/lexbot",
+        { Ques: input }
+      );
+
+      let parsedResponse = "";
+      const responseString = response.data.trim();
+      if (
+        responseString.startsWith("Please find the result for the query below")
+      ) {
+        const jsonString = responseString.split("\n")[1].replace(/'/g, '"');
+        try {
+          parsedResponse = JSON.parse(jsonString);
+        } catch {
+          parsedResponse = jsonString;
+        }
+      } else {
+        parsedResponse = responseString;
+      }
+
+      setMessageHistory([
+        ...messageHistory,
+        { Ques: input, response: parsedResponse },
+      ]);
+      setInput(""); // Clear input after sending message
+    } catch (error) {
+      console.error(error);
+      setMessageHistory([
+        ...messageHistory,
+        {
+          Ques: input,
+          response: `Error: ${"there are no particular files related to this"}`,
+        },
+      ]);
+      setInput(""); // Clear input after sending message
+    }
+  };
+
+  const getRandomBackgroundImage = () => {
+    const images = [
+      "https://source.unsplash.com/1600x900/?nature",
+      "https://source.unsplash.com/1600x900/?water",
+      "https://source.unsplash.com/1600x900/?mountain",
+      "https://source.unsplash.com/1600x900/?beach",
+    ];
+    return images[Math.floor(Math.random() * images.length)];
+  };
+
+  return (
+    <Grid
+      container
+      height={isMinimized ? "80vh" : "80vh"}
+      sx={{
+        backgroundImage: `url(${getRandomBackgroundImage()})`,
+        backgroundSize: "cover",
+      }}
+    >
+      <Paper
+        elevation={8}
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          height: "100%",
+        }}
+      >
+        <Box
+          sx={{
+            bgcolor: "#D52B1E",
+            paddingX: "1rem",
+            paddingY: "0.4rem",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "
+
+

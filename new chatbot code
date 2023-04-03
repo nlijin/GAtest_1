@@ -480,24 +480,37 @@ const ContactInformation = ({ name, phone, email }) => {
   );
 };
 
-export default ContactInformation;
+import { makeStyles } from '@mui/styles';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
 
-import { Typography, Box, Link, Divider } from '@mui/material';
+const useStyles = makeStyles((theme) => ({
+  root: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    padding: theme.spacing(3),
+    backgroundColor: theme.palette.primary.main,
+    color: theme.palette.primary.contrastText,
+  },
+  label: {
+    marginBottom: theme.spacing(1),
+  },
+}));
 
-const ContactInfo = ({ name, email, phone }) => {
+function ContactInfo() {
+  const classes = useStyles();
+
   return (
-    <Box>
-      <Typography variant="h6">{name}</Typography>
-      <Divider />
-      <Typography variant="body1">
-        Email: <Link href={`mailto:${email}`}>{email}</Link>
-      </Typography>
-      <Typography variant="body1">
-        Phone: <Link href={`tel:${phone}`}>{phone}</Link>
-      </Typography>
-    </Box>
+    <Paper className={classes.root}>
+      <Typography variant="h6" className={classes.label}>Contact Information</Typography>
+      <Typography variant="body1">John Doe</Typography>
+      <Typography variant="body1">123 Main St.</Typography>
+      <Typography variant="body1">Anytown, USA 12345</Typography>
+      <Typography variant="body1">Email: john.doe@example.com</Typography>
+      <Typography variant="body1">Phone: 555-555-5555</Typography>
+    </Paper>
   );
-};
+}
 
-export default ContactInfo;
 

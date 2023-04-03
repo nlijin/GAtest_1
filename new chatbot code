@@ -418,106 +418,62 @@ const Chatbot = () => {
 
 
 //contact info
-import React from "react";
-import { makeStyles } from "@material-ui/core/styles";
-import { Typography, Button, IconButton } from "@material-ui/core";
-import { Phone, Email, ExpandMore, ExpandLess } from "@material-ui/icons";
+import * as React from "react";
+import CssBaseline from "@mui/material/CssBaseline";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Container from "@mui/material/Container";
+import Link from "@mui/material/Link";
 
-const useStyles = makeStyles((theme) => ({
-  root: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "flex-start",
-    marginBottom: theme.spacing(2),
-  },
-  name: {
-    fontWeight: "bold",
-    marginBottom: theme.spacing(1),
-  },
-  contactDetails: {
-    display: "flex",
-    alignItems: "center",
-    marginBottom: theme.spacing(1),
-  },
-  icon: {
-    marginRight: theme.spacing(1),
-  },
-}));
-
-const ContactInformation = ({ name, phone, email }) => {
-  const classes = useStyles();
-  const [showDetails, setShowDetails] = React.useState(false);
-
-  const handleToggleDetails = () => {
-    setShowDetails(!showDetails);
-  };
-
+function Copyright() {
   return (
-    <div className={classes.root}>
-      <Typography className={classes.name}>{name}</Typography>
-      {showDetails && (
-        <>
-          <div className={classes.contactDetails}>
-            <Phone className={classes.icon} />
-            <Typography>{phone}</Typography>
-          </div>
-          <div className={classes.contactDetails}>
-            <Email className={classes.icon} />
-            <Typography>{email}</Typography>
-          </div>
-        </>
-      )}
-      <Button
-        variant="outlined"
-        color="primary"
-        size="small"
-        startIcon={showDetails ? <ExpandLess /> : <ExpandMore />}
-        onClick={handleToggleDetails}
-      >
-        {showDetails ? "Hide Details" : "Show Details"}
-      </Button>
-    </div>
+    <Typography variant="body2" color="text.secondary">
+      {"Copyright © "}
+      <Link color="inherit" href="https://website.com/"></Link>
+      {new Date().getFullYear()}
+      {"."}
+    </Typography>
   );
-};
-import { makeStyles } from '@mui/styles';
-import Paper from '@mui/material/Paper';
+}
 
-const useStyles = makeStyles((theme) => ({
-  root: {
-    display: 'flex',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    backgroundColor: theme.palette.primary.main,
-    color: theme.palette.primary.contrastText,
-    padding: theme.spacing(2),
-  },
-  icon: {
-    marginRight: theme.spacing(2),
-    fontSize: 48,
-  },
-}));
-
-function ContactInfo() {
-  const classes = useStyles();
-
+export default function StickyFooter() {
   return (
-    <Paper className={classes.root}>
-      <PhoneIcon className={classes.icon} />
-      <div>
-        <Typography variant="h5" component="h2">
-          Contact Us
-        </Typography>
-        <Typography variant="body1">
-          Phone: +1-555-555-5555
-        </Typography>
-        <Typography variant="body1">
-          Email: info@example.com
-        </Typography>
-        <Typography variant="body1">
-          Address: 123 Main St, Anytown, USA
-        </Typography>
-      </div>
-    </Paper>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        textAlign: "center",
+        // minHeight: "100vh",
+        // position: "fixed",
+        top: "auto",
+        bottom: "0",
+        backgroundColor: (theme) =>
+          theme.palette.mode === "light"
+            ? theme.palette.grey[200]
+            : theme.palette.grey[800],
+      }}
+    >
+      <Box
+        component="footer"
+        sx={{
+          py: 2,
+          px: 2,
+          mt: "auto",
+        }}
+      >
+        <Container maxWidth="lg">
+          <Typography
+            variant="body1"
+            fontWeight="bold"
+            sx={{ cursor: "pointer" }}
+          >
+            Lilly
+          </Typography>
+          <Copyright />
+        </Container>
+      </Box>
+    </Box>
   );
 }
 

@@ -417,3 +417,67 @@ const Chatbot = () => {
             alignItems: "
 
 
+//contact info
+import React from "react";
+import { makeStyles } from "@material-ui/core/styles";
+import { Typography, Button, IconButton } from "@material-ui/core";
+import { Phone, Email, ExpandMore, ExpandLess } from "@material-ui/icons";
+
+const useStyles = makeStyles((theme) => ({
+  root: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-start",
+    marginBottom: theme.spacing(2),
+  },
+  name: {
+    fontWeight: "bold",
+    marginBottom: theme.spacing(1),
+  },
+  contactDetails: {
+    display: "flex",
+    alignItems: "center",
+    marginBottom: theme.spacing(1),
+  },
+  icon: {
+    marginRight: theme.spacing(1),
+  },
+}));
+
+const ContactInformation = ({ name, phone, email }) => {
+  const classes = useStyles();
+  const [showDetails, setShowDetails] = React.useState(false);
+
+  const handleToggleDetails = () => {
+    setShowDetails(!showDetails);
+  };
+
+  return (
+    <div className={classes.root}>
+      <Typography className={classes.name}>{name}</Typography>
+      {showDetails && (
+        <>
+          <div className={classes.contactDetails}>
+            <Phone className={classes.icon} />
+            <Typography>{phone}</Typography>
+          </div>
+          <div className={classes.contactDetails}>
+            <Email className={classes.icon} />
+            <Typography>{email}</Typography>
+          </div>
+        </>
+      )}
+      <Button
+        variant="outlined"
+        color="primary"
+        size="small"
+        startIcon={showDetails ? <ExpandLess /> : <ExpandMore />}
+        onClick={handleToggleDetails}
+      >
+        {showDetails ? "Hide Details" : "Show Details"}
+      </Button>
+    </div>
+  );
+};
+
+export default ContactInformation;

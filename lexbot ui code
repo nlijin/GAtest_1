@@ -404,3 +404,52 @@ return (
         </Box>
       </Paper>
     </Grid>
+    
+    
+    
+    ///add scroll to the end
+    
+                  {messageHistory.map((message, index) =>
+                message.response.Link ? (
+                  <Box key={index}>
+                    <Typography
+                      color="blue"
+                      align="right"
+                      fontSize="1rem"
+                      fontFamily="Calibri"
+                      background="green"
+                    >
+                      <p>{message.Ques}</p>
+                    </Typography>
+
+                    <Typography
+                      color="maroon"
+                      fontSize="1rem"
+                      fontFamily="Calibri"
+                      style={{ lineBreak: "normal" }}
+                    >
+                      <p>{message.response.PageTitle}</p>
+                    </Typography>
+                    <Typography
+                      color="maroon"
+                      fontSize="1rem"
+                      fontFamily="Calibri"
+                      style={{ lineBreak: "normal" }}
+                    >
+                      <p>{message.response.Summary}</p>
+                    </Typography>
+                    <Typography
+                      fontSize="1rem"
+                      fontFamily="Calibri"
+                      style={{ lineBreak: "anywhere" }}
+                    >
+                      <Link
+                        href={message.response.Link}
+                        underline="hover"
+                        rel="noopener noreferrer"
+                        target="_blank"
+                      >
+                        {message.response.Link}
+                      </Link>
+                    </Typography>
+                  </Box>

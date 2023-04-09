@@ -1,23 +1,9 @@
-//can you give me help me with a functional component for the same above code
 
-import React, { useState } from "react";
-import axios from "axios";
-import {
-  Container,
-  Paper,
-  Box,
-  Grid,
-  // Button,
-  TextField,
-  Typography,
-  Link,
-} from "@mui/material";
-import { Send } from "@mui/icons-material";
-import RefreshIcon from "@mui/icons-material/Refresh";
 
 const Chatbot = () => {
   const [input, setInput] = useState("");
   const [messageHistory, setMessageHistory] = useState([]);
+  const [isMinimized, setIsMinimized] = useState(false);
 
   const handleInputChange = (event) => {
     setInput(event.target.value);
@@ -33,104 +19,158 @@ const Chatbot = () => {
     setMessageHistory([]);
   };
 
-  const sendPostRequest = () => {
-    axios
-      .post(
+  const toggleMinimized = () => {
+    setIsMinimized(!isMinimized);
+  };
+
+  const sendPostRequest = async () => {
+    try {
+      const response = await axios.post(
         "https://6rzzjwudya.execute-api.us-east-1.amazonaws.com/DEV/lexbot",
         { Ques: input }
-      )
-      .then((response) => {
-        const faqResponse = response.data;
-        const parsedResponse = JSON.parse(
-          response.data.replace(/'/g, '"').split("\n")[1]
-        );
-        setMessageHistory([
-          ...messageHistory,
-          { Ques: input, response: parsedResponse },
-        ]);
-        setInput(""); // Clear input after sending message
+      );
 
-        console.log(parsedResponse.Link);
-        console.log(parsedResponse.Summary);
-        // console.log(parsedResponse.Header);
-        // console.log(parsedResponse.Title);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
+      let parsedResponse = "";
+      const responseString = response.data.trim();
+      if (
+        responseString.startsWith("Please find the result for the query below")
+      ) {
+        const jsonString = responseString.split("\n")[1].replace(/'/g, '"');
+        try {
+          parsedResponse = JSON.parse(jsonString);
+        } catch {
+          parsedResponse = jsonString;
+        }
+      } else {
+        parsedResponse = responseString;
+      }
+
+      setMessageHistory([
+        ...messageHistory,
+        { Ques: input, response: parsedResponse },
+      ]);
+      setInput(""); // Clear input after sending message
+    } catch (error) {
+      console.error(error);
+      setMessageHistory([
+        ...messageHistory,
+        {
+          Ques: input,
+          response: `Error: ${"there are no particular files related to this"}`,
+        },
+      ]);
+      setInput(""); // Clear input after sending message
+    }
   };
 
   //need to fix the bot height
   //add a header to the bot
 
   return (
-    <Container
-      maxWidth="lg"
-      sx={{
-        bgcolor: "whitesmoke",
-        height: "100vh",
-      }}
+    <Grid
+      container
+      height={isMinimized ? "80vh" : "80vh"}
+      bgcolor="whitesmoke"
+      padding="1rem"
+      justifyContent="flex-end"
+      alignItems="flex-end"
     >
-      <Grid
-        container
-        height="100vh"
-        bgcolor="#dce1fe"
-        // bgcolor="maroon"
-        // f6f8ff
-        padding="1rem"
-        justifyContent="flex-end"
-        alignItems="flex-end"
-      >
-        <Paper elevation={8}>
-          <Box width="25rem">
-            <Box
-              sx={{
-                bgcolor: "red",
-                padding: "0.5rem",
-                // marginTop: "1rem",
-              }}
+      {/* <Paper elevation={8}>
+        <ContactInfo />
+      </Paper> */}
+      <Paper elevation={8}>
+        <Box width="25rem">
+          <Box
+            sx={{
+              bgcolor: "#D52B1E",
+              paddingX: "1rem",
+              paddingY: "0.4rem",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              borderRadius: "1px",
+            }}
+          >
+            <Typography
+              color="white"
+              fontWeight="bold"
+              variant="h6"
+              component="span"
+              fontFamily="monospace"
             >
-              <Typography
-                color="white"
-                fontWeight="bold"
-                variant="h6"
-                component="span"
-              >
-                LILLY
-              </Typography>
-            </Box>
+              Lilly
+            </Typography>
+            <div>
+              {isMinimized ? (
+                <>
+                  <AddIcon
+                    onClick={toggleMinimized}
+                    sx={{
+                      marginX: "1rem",
+                      marginY: "0.5rem",
+                      cursor: "pointer",
+                      color: "white",
+                    }}
+                  />
+                </>
+              ) : (
+                <>
+                  <MinimizeIcon
+                    onClick={toggleMinimized}
+                    sx={{
+                      marginX: "1rem",
+                      marginY: "0.5rem",
+                      cursor: "pointer",
+                      color: "white",
+                    }}
+                  />
+                </>
+              )}
+            </div>
+          </Box>
 
+          {!isMinimized && (
             <Box
               sx={{
                 padding: "1rem",
                 height: "200px",
                 overflow: "hidden",
                 overflowY: "scroll",
-                background: "Azure",
+                background: "#FAFAFA",
               }}
             >
               {messageHistory.map((message, index) =>
-                message.parsedResponse ? (
+                message.response.Link ? (
                   <Box key={index}>
                     <Typography
                       color="blue"
                       align="right"
                       fontSize="1rem"
-                      fontFamily="comic sans ms"
+                      fontFamily="Calibri"
+                      background="green"
                     >
                       <p>{message.Ques}</p>
+                    </Typography>
+
+                    <Typography
+                      color="maroon"
+                      fontSize="1rem"
+                      fontFamily="Calibri"
+                      style={{ lineBreak: "normal" }}
+                    >
+                      <p>{message.response.PageTitle}</p>
                     </Typography>
                     <Typography
                       color="maroon"
                       fontSize="1rem"
-                      fontFamily="comic sans ms"
-                      style={{ lineBreak: "anywhere" }}
+                      fontFamily="Calibri"
+                      style={{ lineBreak: "normal" }}
                     >
                       <p>{message.response.Summary}</p>
                     </Typography>
                     <Typography
                       fontSize="1rem"
-                      fontFamily="comic sans ms"
+                      fontFamily="Calibri"
                       style={{ lineBreak: "anywhere" }}
                     >
                       <Link
@@ -144,20 +184,44 @@ const Chatbot = () => {
                     </Typography>
                   </Box>
                 ) : (
-                  <p>{message.faqResponse}</p>
+                  <Box key={index}>
+                    <Typography
+                      color="blue"
+                      align="right"
+                      fontSize="1rem"
+                      fontFamily="Calibri"
+                    >
+                      <p>{message.Ques}</p>
+                    </Typography>
+
+                    <Typography
+                      color="maroon"
+                      fontSize="1rem"
+                      fontFamily="Calibri"
+                      style={{ lineBreak: "normal" }}
+                    >
+                      <p>{message.response}</p>
+                    </Typography>
+                  </Box>
                 )
               )}
-
             </Box>
+          )}
 
+          {!isMinimized && (
             <Box
               sx={{
                 flexGrow: 1,
                 padding: "1rem",
-                background: "Azure",
+                background: "#FAFAFA",
               }}
             >
-              <Grid container justifyContent="flex-end">
+              <Grid
+                container
+                justifyContent="flex-end"
+                alignItems="center"
+                // sx={{ background: "yellow" }}
+              >
                 <TextField
                   variant="outlined"
                   size="small"
@@ -168,191 +232,43 @@ const Chatbot = () => {
                   onKeyDown={handleAnswerChange}
                   sx={{ background: "white" }}
                 />
-                {/* <Button
-                  sx={{ marginLeft: "1rem" }}
-                  variant="outline"
-                  onClick={sendPostRequest}
-                  color="secondary"
-                  size="large"
-                > */}
-                <RefreshIcon
-                  fontSize="large"
-                  onClick={handleClear}
+                <Box
                   sx={{
-                    marginX: "1rem",
-                    marginY: "0.5rem",
-                    cursor: "pointer",
-                    color: "red",
+                    display: "flex",
+                    alignItems: "center",
+                    height: "3rem",
+                    // background: "yellow",
                   }}
-                />
-                <Send
-                  onClick={sendPostRequest}
-                  fontSize="large"
-                  sx={{
-                    // marginX: "1rem",
-                    marginY: "0.5rem",
-                    cursor: "pointer",
-                    color: "red",
-                  }}
-                />
-                {/* </Button> */}
-                {/* <Button
-                  sx={{ marginLeft: "1rem" }}
-                  variant="outline"
-                  onClick={handleClear}
-                  color="secondary" 
-                >*/}
-
-                {/* </Button> */}
+                >
+                  <RefreshIcon
+                    fontSize="medium"
+                    onClick={handleClear}
+                    sx={{
+                      marginX: "1rem",
+                      marginY: "1rem",
+                      cursor: "pointer",
+                      color: "#D52B1E",
+                    }}
+                  />
+                  <Send
+                    onClick={sendPostRequest}
+                    fontSize="small"
+                    sx={{
+                      marginX: "0.2rem",
+                      marginY: "2rem",
+                      cursor: "pointer",
+                      color: "#D52B1E",
+                    }}
+                  />
+                </Box>
               </Grid>
             </Box>
-          </Box>
-        </Paper>
-      </Grid>
-    </Container>
+          )}
+        </Box>
+      </Paper>
+    </Grid>
   );
 };
 
 export default Chatbot;
 
-// "https://6rzzjwudya.execute-api.us-east-1.amazonaws.com/DEV/lexbot",
-
-
-
-const sendPostRequest = () => {
-    axios
-      .post(
-        "https://6rzzjwudya.execute-api.us-east-1.amazonaws.com/DEV/lexbot",
-        { Ques: input }
-      )
-      .then((response) => {
-        const faqResponse = response.data;
-        const parsedResponse = JSON.parse(
-          response.data.replace(/'/g, '"').split("\n")[1]
-        );
-
-        if (parsedResponse.Link) {
-          setMessageHistory([
-            ...messageHistory,
-            {
-              Ques: input,
-              response: { Summary: parsedResponse.Summary, Link: parsedResponse.Link },
-              parsedResponse: true,
-            },
-          ]);
-        } else {
-          setMessageHistory([
-            ...messageHistory,
-            {
-              Ques: input,
-              response: faqResponse,
-              parsedResponse: false,
-            },
-          ]);
-        }
-        setInput(""); // Clear input after sending message
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-  };
-
-
-////return
-
-
-<Box
-  sx={{
-    padding: "1rem",
-    height: "200px",
-    overflow: "hidden",
-    overflowY: "scroll",
-    background: "Azure",
-  }}
->
-  {messageHistory.map((message, index) =>
-    message.parsedResponse ? (
-      <Box key={index}>
-        <Typography
-          color="blue"
-          align="right"
-          fontSize="1rem"
-          fontFamily="comic sans ms"
-        >
-          <p>{message.Ques}</p>
-        </Typography>
-        <Typography
-          color="maroon"
-          fontSize="1rem"
-          fontFamily="comic sans ms"
-          style={{ lineBreak: "anywhere" }}
-        >
-          <p>{message.response.Summary}</p>
-        </Typography>
-        <Typography
-          fontSize="1rem"
-          fontFamily="comic sans ms"
-          style={{ lineBreak: "anywhere" }}
-        >
-          <Link
-            href={message.response.Link}
-            underline="hover"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            {message.response.Link}
-          </Link>
-        </Typography>
-      </Box>
-    ) : (
-      <Typography
-        key={index}
-        color="blue"
-        align="right"
-        fontSize="1rem"
-        fontFamily="comic sans ms"
-      >
-        <p>{message.response}</p>
-      </Typography>
-    )
-  )}
-</Box>
-
-
-const sendPostRequest = async () => {
-  try {
-    const response = await axios.post(
-      "https://6rzzjwudya.execute-api.us-east-1.amazonaws.com/DEV/lexbot",
-      { Ques: input }
-    );
-
-    let parsedResponse = "";
-    const responseString = response.data.trim();
-    if (responseString.startsWith("Please find the result for the query below")) {
-      const jsonString = responseString.split("\n")[1].replace(/'/g, '"');
-      try {
-        parsedResponse = JSON.parse(jsonString);
-      } catch {
-        parsedResponse = jsonString;
-      }
-    } else {
-      parsedResponse = responseString;
-    }
-
-    setMessageHistory([
-      ...messageHistory,
-      { Ques: input, response: parsedResponse },
-    ]);
-    setInput(""); // Clear input after sending message
-  } catch (error) {
-    console.error(error);
-    setMessageHistory([
-      ...messageHistory,
-      {
-        Ques: input,
-        response: `Error: ${"there are no particular files related to this"}`,
-      },
-    ]);
-    setInput(""); // Clear input after sending message
-  }
-};

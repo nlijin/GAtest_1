@@ -1,0 +1,237 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform:  'AWS::Serverless-2016-10-31'
+
+Description: >
+     aads-edb-complex-data-parsers
+Parameters:
+    pDeployEnvironment:
+        Type: String
+        AllowedValues:
+            - dev
+            - qa
+            - prod
+    pGlueServiceRole:
+        Description: Glue Service Role Name for EDB Complex Data Parser 
+        Type: String
+    pExtraPyFiles:
+        Type: String
+    pScriptLocation:
+        Type: String
+    pTempFileLocation:
+        Type: String
+    pExternalJarLocation:
+        Type: String   
+    pConfigBucket:
+        Type: String
+    pConfigPath:
+        Type: String
+    pJSONHierScriptLocation:
+        Type: String
+    pJSONHierConfigPath:
+        Type: String
+    pJSONHierLogLevel:
+        Type: String
+    pJSONExplodeScriptLocation:
+        Type: String
+    pJSONExplodeConfigPath:
+        Type: String
+    pXMLHierScriptLocation:
+        Type: String
+    pXMLHierConfigPath:
+        Type: String
+    pCSVConfigLocation:
+        Type: String
+    pCSVScriptLocation:
+        Description: "The name of GlueScript which needs to be deployed"
+        Type: String
+    pGlueJobName:
+        Description: "The name of GLUE JOB which will be created"
+        Type: String
+    pLogLevel:
+        Type: String
+    pJSONScriptLocation:
+        Type: String
+    pJSONConfigPath:
+        Type: String
+    pJSONLogLevel:
+        Type: String
+    pXMLExplodeScriptLocation:
+        Type: String
+    pXMLExplodeConfigPath:
+        Type: String
+    pJSONExplodeLogLevel:
+        Type: String
+    pCodeConfigLocation:
+        Type: String
+    pScriptName:
+        Description: "The name of GlueScript which needs to be deployed"
+        Type: String
+    pParquetGlueJobName:
+        Description: "The name of GLUE JOB which will be created"
+        Type: String
+
+Resources:
+    rEdbParserGlueJob:
+        Type: AWS::Glue::Job
+        Properties:
+            Name: edb_parser_glue_test_job
+            Description: "Test job for EDB Complex Data Parser"
+            Role: !Ref pGlueServiceRole
+            Command:
+                Name: glueetl
+                ScriptLocation: !Ref pScriptLocation
+                PythonVersion : "3"
+            GlueVersion: "2.0"
+            DefaultArguments: {
+                "--extra-py-files": !Ref pExtraPyFiles,
+                "--extra-jars": !Ref pExternalJarLocation,
+                "--TempDir": !Ref pTempFileLocation,
+                "--config_bucket": !Ref pConfigBucket,
+                "--config_path": !Ref pConfigPath
+                }
+
+
+    rEdbJSONHierGlueJob:
+        Type: AWS::Glue::Job
+        Properties:
+            Name: edb_cdp_json_hierarchical_converter
+            Description: "EDB CDP JSON Hierarchical Converter"
+            Role: !Ref pGlueServiceRole
+            Command:
+                Name: glueetl
+                ScriptLocation: !Ref pJSONHierScriptLocation
+                PythonVersion : "3"
+            GlueVersion: "2.0"
+            DefaultArguments: {
+                "--TempDir": !Ref pTempFileLocation,
+                "--config_bucket": !Ref pConfigBucket,
+                "--config_file_path": !Ref pJSONHierConfigPath,
+                "--LOG_LEVEL": !Ref pJSONHierLogLevel,
+                "--environment": !Ref pDeployEnvironment
+                }
+
+    rEdbJSONExplodeGlueJob:
+        Type: AWS::Glue::Job
+        Properties:
+            Name: edbcdp_json_explode_converter
+            Description: "EDB CDP JSON Explode Converter"
+            Role: !Ref pGlueServiceRole
+            Command:
+                Name: glueetl
+                ScriptLocation: !Ref pJSONExplodeScriptLocation
+                PythonVersion : "3"
+            GlueVersion: "2.0"
+            WorkerType : "G.2X"
+            NumberOfWorkers: 50
+            DefaultArguments: {
+                "--TempDir": !Ref pTempFileLocation,
+                "--config_bucket": !Ref pConfigBucket,
+                "--config_file_path": !Ref pJSONExplodeConfigPath,
+                "--LOG_LEVEL": !Ref pJSONHierLogLevel,
+                "--environment": !Ref pDeployEnvironment
+                }     
+         
+    rEdbGlueJobCSVTransformer:
+        Type: AWS::Glue::Job
+        Properties:
+            Name: !Ref pGlueJobName
+            Role: !Ref pGlueServiceRole
+            Command:
+                Name: glueetl
+                PythonVersion: "3"
+                ScriptLocation: !Sub ${pCSVScriptLocation}
+            GlueVersion: "2.0"
+            WorkerType : "G.1X"
+            NumberOfWorkers: 2
+            DefaultArguments: {
+                "--environment": !Ref pDeployEnvironment,
+                "--TempDir": !Ref pTempFileLocation,
+                "--config_file_path": !Ref pCSVConfigLocation,
+                "--LOG_LEVEL": !Ref pLogLevel
+                }
+
+    rEdbXMLHierGlueJob:
+        Type: AWS::Glue::Job
+        Properties:
+            Name: edb_cdp_xml_hierarchy_converter
+            Description: "EDB CDP XML Hierarchical Converter"
+            Role: !Ref pGlueServiceRole
+            Command:
+                Name: glueetl
+                ScriptLocation: !Ref pXMLHierScriptLocation
+                PythonVersion : "3"
+            GlueVersion: "2.0"
+            WorkerType : "G.1X"
+            NumberOfWorkers: 2            
+            DefaultArguments: {
+                "--TempDir": !Ref pTempFileLocation,
+                "--config_bucket": !Ref pConfigBucket,
+                "--config_file_path": !Ref pXMLHierConfigPath,
+                "--LOG_LEVEL": !Ref pJSONHierLogLevel,
+                "--environment": !Ref pDeployEnvironment,
+                "--extra-py-files": !Ref pExtraPyFiles,
+                "--extra-jars": !Ref pExternalJarLocation
+                }
+                
+    rEdbJSONConverterGlueJob:
+        Type: AWS::Glue::Job
+        Properties:
+            Name: edb_cdp_json_converter
+            Description: "EDB CDP JSON Converter"
+            Role: !Ref pGlueServiceRole
+            Command:
+                Name: glueetl
+                ScriptLocation: !Ref pJSONScriptLocation
+                PythonVersion : "3"
+            GlueVersion: "2.0"
+            DefaultArguments: {
+                "--TempDir": !Ref pTempFileLocation,
+                "--config_bucket": !Ref pConfigBucket,
+                "--config_file_path": !Ref pJSONConfigPath,
+                "--LOG_LEVEL": !Ref pJSONLogLevel,
+                "--environment": !Ref pDeployEnvironment,
+                "--extra-py-files": !Ref pExtraPyFiles,
+                "--extra-jars": !Ref pExternalJarLocation
+            }
+
+    rEdbXMLExplodeGlueJob:
+        Type: AWS::Glue::Job
+        Properties:
+            Name: edb_cdp_xml_explode_converter
+            Description: "EDB CDP XML Explode Converter"
+            Role: !Ref pGlueServiceRole
+            Command:
+                Name: glueetl
+                ScriptLocation: !Ref pXMLExplodeScriptLocation
+                PythonVersion : "3"
+            GlueVersion: "2.0"
+            WorkerType : "G.1X"
+            NumberOfWorkers: 2            
+            DefaultArguments: {
+                "--TempDir": !Ref pTempFileLocation,
+                "--config_bucket": !Ref pConfigBucket,
+                "--config_file_path": !Ref pXMLExplodeConfigPath,
+                "--LOG_LEVEL": !Ref pJSONExplodeLogLevel,
+                "--environment": !Ref pDeployEnvironment,
+                "--extra-py-files": !Ref pExtraPyFiles,
+                "--extra-jars": !Ref pExternalJarLocation
+                } 
+
+    EdbCdpGlueJobParquetTransformer:
+        Type: AWS::Glue::Job
+        Properties:
+            Name: !Ref pParquetGlueJobName
+            Role: !Ref pGlueServiceRole
+            Command:
+                Name: glueetl
+                PythonVersion: "3"
+                ScriptLocation: !Sub ${pCodeConfigLocation}/code/${pScriptName}
+            GlueVersion: "2.0"
+            WorkerType : "G.1X"
+            NumberOfWorkers: 2
+            DefaultArguments: {
+                "--environment": !Sub "${pDeployEnvironment}",
+                "--TempDir": !Sub "${pCodeConfigLocation}/temp",
+                "--config_file_path": !Sub "${pCodeConfigLocation}/config/edb_parquet_transformer_config.json",
+                "--LOG_LEVEL": !Sub "${pLogLevel}"
+                }          

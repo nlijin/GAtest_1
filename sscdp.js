@@ -91,3 +91,39 @@ const Home = () => {
 };
 
 export default Home;
+
+//post call with fetch
+const handleSubmit = (event) => {
+  event.preventDefault();
+  const data = { input1, input2, input3, input4 }; // create an object with input values
+  fetch('https://example.com/endpoint', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data) // convert object to JSON string
+  })
+  .then(response => {
+    console.log('Success:', response);
+  })
+  .catch(error => {
+    console.error('Error:', error);
+  });
+};
+
+
+//post call with axios
+import axios from 'axios';
+
+const handleSubmit = (event) => {
+  event.preventDefault();
+  const data = { input1, input2, input3, input4 }; // create an object with input values
+  axios.post('https://example.com/endpoint', data)
+    .then((response) => {
+      console.log(response);
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+};
+
